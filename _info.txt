@@ -1,0 +1,15 @@
+#compile
+clear; make clean; make; ./stepper -h -I
+
+#documentation
+firefox doc/html/index.html &
+
+#edit
+gedit Makefile stepper.h stepper.cpp &
+
+#version
+git commit -a
+
+#run
+##run uControl (XYZ)
+./stepper --message "*IDN?"
