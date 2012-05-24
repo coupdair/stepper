@@ -4,9 +4,11 @@ C++ classes to handle stepper for translation.
 
 additional library needed:
 * CImg for command line option (and CImg for XYZ translation scaning, in the near future).
-  Please, install CImg parent folder as CImg
+  Please, install CImg in a parent folder as CImg.
+* RS232 for serial stepper.
+  Please, install RS232 in a parent folder as rs232.
 
-install example
+install example:
   cd code
   #stepper
   git clone git://github.com/coupdair/stepper.git
@@ -17,6 +19,11 @@ install example
   unzip CImg-1.4.9.zip
   ln -s CImg-1.4.9 CImg
   ls CImg
+  #RS232
+  git clone git://github.com/coupdair/rs232.git
+  ls rs232
+  #folder structure
+  ls code #CImg CImg-1.4.9 rs232 stepper
   #stepper
   cd stepper
   make
