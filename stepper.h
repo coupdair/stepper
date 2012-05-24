@@ -36,9 +36,9 @@ public:
   {
     std::string command;
     ///Set direction and velocity (e.g. "+X;RX1000")
-    command=(step(0)<0)?std::string("-"):std::string("+");
-    command+=std::string("X;");//e.g. +X;
-    command+="RX1000;";//e.g. "RX1000"
+    command=(step(0)<0)?std::string("-"):std::string("+");//direction
+    command+=std::string("X;");//axis (e.g. "+X;")
+    command+="RX1000;";//velocity (e.g. "RX1000")
 std::cerr<<"Set direction and velocity: write=|"<<command<<"|"<<std::flush;
 //    comStepper.writes(command);
 //    comStepper.reads(command);
