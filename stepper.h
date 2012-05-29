@@ -54,6 +54,26 @@ public:
     return pComStepper->opens(port_path);
   }//open
 
+  //! set both direction AND velocity command
+  /** 
+   *
+   * @param[in] step=number of step to do
+   * @param[in] velocity=velocity to go
+   * @param[in] axis=translation along axis (as string; e.g. "X")
+   *
+   * @return message (i.e. string to send to serial port)
+   */
+  const std::string set_directionNvelocity_command(const int step,const int velocity,const std::string axis)
+  {
+    const std::string direction=(step<0)?std::string("-"):std::string("+");
+    //axis
+    const std::string suffix=";";
+    const std::string prefix="N";
+    const std::string formated_velocity="1234";//! \todo int to string
+    const std::string command=direction+axis+suffix+prefix+formated_velocity+suffix;
+    return command;//e.g. "+X;RX1000"
+  }
+
   //! set step command
   /** 
    *
@@ -65,6 +85,7 @@ public:
   const std::string set_step_command(int step,const std::string axis)
   {
     const std::string prefix="N";
+    //axis
     const std::string formated_step="123";//! \todo int to string
     const std::string suffix=";";
     const std::string command=prefix+axis+formated_step+suffix;
@@ -74,31 +95,33 @@ public:
   //! move once using 3D step (and 3D velocity)
   /** 
    *
-   * @param[in] message= string to send to serial port  
+   * @param[in] step=steps in the 3 directions (XYZ)
+   * @param[in] velocity=velocities in the 3 directions (XYZ)
    *
-   * @return 
+   * @return true on success, false otherwise
    */
   bool move(const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity)
   {
+    //null displacement
+    if(step(0)==0) return true;
+    //other displacement
     std::string command;
-    ///Set direction and velocity (e.g. "+X;RX1000")
-    command=(step(0)<0)?std::string("-"):std::string("+");//direction
-    command+=std::string("X;");//axis (e.g. "+X;")
-    command+="RX1000;";//velocity (e.g. "RX1000")
+    ///Set direction and velocity (e.g. "+X;RX1000;")
+    command=set_directionNvelocity_command(step(0),velocity(0),axis[0]);
 std::cerr<<"Set direction and velocity: write=|"<<command<<"|"<<std::flush;
-    pComStepper->writes(command);
+    if(!pComStepper->writes(command)) return false;
 //    pComStepper->reads(command);
 //std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
     ///Set displacement
-    command=set_step_command(step[0],axis[0]);//e.g. "NX123;"
+    command=set_step_command(step(0),axis[0]);//e.g. "NX123;"
 std::cerr<<"Set displacement: write=|"<<command<<"|"<<std::flush;
-    pComStepper->writes(command);
+    if(!pComStepper->writes(command)) return false;
 //    pComStepper->reads(command);
 //std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
     ///Execute displacement
-    command="MX;";
-std::cerr<<"Set displacement: write=|"<<command<<"|"<<std::flush;
-    pComStepper->writes(command);
+    command="M"+axis[0]+";";//e.g. "MX;";
+std::cerr<<"Make displacement: write=|"<<command<<"|"<<std::flush;
+    if(!pComStepper->writes(command)) return false;
 //    pComStepper->reads(command);
 //std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
     return true;

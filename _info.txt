@@ -12,4 +12,8 @@ git commit -a
 
 #run
 ##run uControl (XYZ)
-./stepper --message "*IDN?"
+./stepper --device-type uControlXYZ --serial-type serial_system
+
+##test
+./stepper --device-path /dev/stdout
+

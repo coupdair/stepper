@@ -1,7 +1,7 @@
 PROGRAMS = stepper  
 DOCUMENTATIONS = doc
 
-version = v0.1.0
+version = v0.1.1
 OPT = -Dcimg_display=0 -Dcimg_debug=2 -Dcimg_use_vt100 -DVERSION=\"$(version)\"
 CC = gcc
 CPP = g++
