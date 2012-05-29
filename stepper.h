@@ -10,6 +10,8 @@ public:
 #if cimg_debug>1
   std::string class_name;
 #endif
+  //! class (or library) version for information only
+  std::string class_version;
 private:
   //! communication with stepper
   Cserial* pComStepper;
@@ -23,6 +25,7 @@ public:
 #if cimg_debug>1
     class_name="Cstepper";
 #endif
+    class_version=VERSION;
   }//constructor
 
   //! Open stepper device
