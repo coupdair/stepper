@@ -1,0 +1,16 @@
+
+ stepper : stepper program of the Laboratory of Mechanics in Lille (LML) is intended to make translation displacement using a stepping motor, it uses different GNU libraries (see --info option)
+
+ usage: ./stepper -h -I
+        ./stepper -nx 10 -sx 1 -vx 1000 --device-type uControlXYZ
+ version: v0.0.2
+ compilation date:  (May 28 2012, 22:36:44)
+
+    --help           true                     help (or -h option)
+    --info           false                    show compilation options (or -I option)
+    --device-type    uControlXYZ              Type of stepper device
+    --device-path    /dev/ttyUSB0             Path of stepper device
+    --serial-type    serial_termios           Type of serial device for stepper (i.e. serial_termios or serial_system)
+    -sx              100                      displacement step along X axis.
+    -vx              1000                     displacement velocity along X axis.
+    -nx              10                       number of displacement along X axis.
