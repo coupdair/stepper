@@ -63,19 +63,19 @@ public:
 std::cerr<<"Set direction and velocity: write=|"<<command<<"|"<<std::flush;
     pComStepper->writes(command);
 //    pComStepper->reads(command);
-std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
+//std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
     ///Set displacement
     command="NX1;";
 std::cerr<<"Set displacement: write=|"<<command<<"|"<<std::flush;
     pComStepper->writes(command);
 //    pComStepper->reads(command);
-std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
+//std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
     ///Execute displacement
     command="MX;";
 std::cerr<<"Set displacement: write=|"<<command<<"|"<<std::flush;
     pComStepper->writes(command);
 //    pComStepper->reads(command);
-std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
+//std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
     return true;
   }//move
 

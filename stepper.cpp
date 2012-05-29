@@ -99,7 +99,7 @@ version: "+std::string(VERSION)+"\n compilation date: " \
   ///device
   const std::string DeviceType=cimg_option("--device-type","uControlXYZ","Type of stepper device");
   const std::string DevicePath=cimg_option("--device-path","/dev/ttyUSB0","Path of stepper device");
-  const std::string SerialType=cimg_option("--serial-type","serial_termios","Type of serial device for stepper (i.e. serial_termios or serial_system)");
+  const std::string SerialType=cimg_option("--serial-type","serial_system","Type of serial device for stepper (i.e. serial_termios or serial_system)");
   ///displacement
   cimg_library::CImg<int> step(3);step.fill(0);
   {
