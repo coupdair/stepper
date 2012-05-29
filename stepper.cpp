@@ -118,6 +118,8 @@ version: "+std::string(VERSION)+"\n compilation date: " \
   const int number_x=cimg_option("-nx",10,"number of displacement along X axis.");
   number(0)=number_x;
   }
+  ///wait time between steps
+  const int wait_time=cimg_option("--wait-time",500,"wait time between steps in ms.");
   ///stop if help requested
   if(show_help) {/*print_help(std::cerr);*/return 0;}
 //stepper device object
@@ -125,8 +127,13 @@ version: "+std::string(VERSION)+"\n compilation date: " \
 // OPEN 
   if(!stepper.open(DevicePath,SerialType)) return 1;
 // WRITE 
-  std::cerr << "displacement along (X,Y,Z)=("<<number(0)*step(0)<<","<<0<<","<<0<<") steps at (vX,vY,vZ)=("<<velocity(0)<<","<<0<<","<<0<<") step(s) per second speed."<<std::endl;
-  if(!stepper.move(step,velocity)) return 1;
+  std::cerr << "displacement along (X,Y,Z)=("<<number(0)*step(0)<<","<<0<<","<<0<<") steps at (vX,vY,vZ)=("<<velocity(0)<<","<<0<<","<<0<<") step(s) per second speed.\n"<<std::flush;
+  for(int i=0;i<number(0);++i)
+  {
+    std::cerr << "actual displacement along (X,Y,Z)=("<<i*step(0)<<","<<0<<","<<0<<") steps over entire displacement of ("<<number(0)*step(0)<<","<<0<<","<<0<<") steps.\n"<<std::flush;
+    if(!stepper.move(step,velocity)) return 1;
+    cimg_library::cimg::wait(wait_time);
+  }//step loop
 //CLOSE
   stepper.close();
   return 0;

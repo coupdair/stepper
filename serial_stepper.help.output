@@ -3,8 +3,8 @@
 
  usage: ./stepper -h -I
         ./stepper -nx 10 -sx 1 -vx 1000 --device-type uControlXYZ
- version: v0.1.0
- compilation date:  (May 29 2012, 22:52:21)
+ version: v0.1.2
+ compilation date:  (May 29 2012, 23:50:16)
 
     --help           true                     help (or -h option)
     --info           false                    show compilation options (or -I option)
@@ -14,3 +14,4 @@
     -sx              100                      displacement step along X axis.
     -vx              1000                     displacement velocity along X axis.
     -nx              10                       number of displacement along X axis.
+    --wait-time      500                      wait time between steps in ms.

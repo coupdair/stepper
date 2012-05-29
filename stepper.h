@@ -2,6 +2,7 @@
 #define STEPPER
 
 #include <vector>
+#include <sstream>
 #include "../rs232/serial_factory.h"
 
 class Cstepper
@@ -54,6 +55,17 @@ public:
     return pComStepper->opens(port_path);
   }//open
 
+  //! convert value to string
+  /**
+   * format value to string
+  **/
+  template<typename T> std::string valueToString(const T& value)
+  {
+    std::ostringstream stream;
+    stream << value;
+    return stream.str();
+  }//valueToString
+
   //! set both direction AND velocity command
   /** 
    *
@@ -69,7 +81,7 @@ public:
     //axis
     const std::string suffix=";";
     const std::string prefix="N";
-    const std::string formated_velocity="1234";//! \todo int to string
+    const std::string formated_velocity=valueToString(velocity);
     const std::string command=direction+axis+suffix+prefix+formated_velocity+suffix;
     return command;//e.g. "+X;RX1000"
   }
@@ -86,7 +98,7 @@ public:
   {
     const std::string prefix="N";
     //axis
-    const std::string formated_step="123";//! \todo int to string
+    const std::string formated_step=valueToString(step);
     const std::string suffix=";";
     const std::string command=prefix+axis+formated_step+suffix;
     return command;//e.g. "NX123;"
