@@ -17,7 +17,7 @@
  *
  *  \verbinclude "stepper.help.output"
  *  
- *  \section sectionSerialDocumentation documentation outline
+ *  \section sectionStepperDocumentation documentation outline
  *  This is the reference documentation of <a href="http://www.meol.cnrs.fr/">serial</a>, from the <a href="http://www.univ-lille1.fr/lml/">LML</a>.\n\n
  *  stepper software. The main function is in <a href="stepper_8cpp.html">stepper.cpp</a> source file.\n\n
  *  This documentation has been automatically generated from the sources, 
@@ -97,8 +97,9 @@ version: "+std::string(VERSION)+"\n compilation date: " \
   bool show_info=cimg_option("-I",false,NULL);//-I hidden option
   if( cimg_option("--info",show_info,"show compilation options (or -I option)") ) {show_info=true;cimg_library::cimg::info();}//same --info or -I option
   ///device
-  //  const std::string DeviceType=cimg_option("--device-type","uControlXYZ","Type of stepper device");
-  const std::string DevicePath=cimg_option("--device-path","/dev/ttyUSB0","Path  of stepper device");
+  const std::string DeviceType=cimg_option("--device-type","uControlXYZ","Type of stepper device");
+  const std::string DevicePath=cimg_option("--device-path","/dev/ttyUSB0","Path of stepper device");
+  const std::string SerialType=cimg_option("--serial-type","serial_termios","Type of serial device for stepper (i.e. serial_termios or serial_system)");
   ///displacement
   cimg_library::CImg<int> step(3);step.fill(0);
   {
@@ -122,7 +123,7 @@ version: "+std::string(VERSION)+"\n compilation date: " \
 //stepper device object
   Cstepper stepper;
 // OPEN 
-  if(!stepper.open(DevicePath)) return 1;
+  if(!stepper.open(DevicePath,SerialType)) return 1;
 // WRITE 
   std::cerr << "displacement along (X,Y,Z)=("<<number(0)*step(0)<<","<<0<<","<<0<<") steps at (vX,vY,vZ)=("<<velocity(0)<<","<<0<<","<<0<<") step(s) per second speed."<<std::endl;
   if(!stepper.move(step,velocity)) return 1;
