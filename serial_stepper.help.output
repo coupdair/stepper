@@ -4,7 +4,7 @@
  usage: ./stepper -h -I
         ./stepper -nx 10 -sx 1 -vx 1000 --device-type uControlXYZ
  version: v0.1.0
- compilation date:  (May 29 2012, 19:05:24)
+ compilation date:  (May 29 2012, 22:52:21)
 
     --help           true                     help (or -h option)
     --info           false                    show compilation options (or -I option)
