@@ -103,13 +103,15 @@ version: "+std::string(VERSION)+"\n compilation date: " \
   ///displacement
   cimg_library::CImg<int> step(3);step.fill(0);
   {
-  const int step_x=cimg_option("-sx",100,"displacement step along X axis.");
+  const int step_x=cimg_option("-sx",100,"displacement step along X axis (e.g. -10 steps to go backward, i.e. displacement can be positive or negative).");
   step(0)=step_x;
+  const int step_y=cimg_option("-sy",100,"displacement step along Y axis.");
+  step(1)=step_y;
   }
   ///velocity
   cimg_library::CImg<int> velocity(3);velocity.fill(0);
   {
-  const int velocity_x=cimg_option("-vx",1000,"displacement velocity along X axis.");
+  const unsigned int velocity_x=cimg_option("-vx",1000,"displacement velocity along X axis (note: absolute velocity, i.e. could not be negative).");
   velocity(0)=velocity_x;
   }
   ///number of steps
@@ -126,7 +128,7 @@ version: "+std::string(VERSION)+"\n compilation date: " \
   Cstepper stepper;
 // OPEN 
   if(!stepper.open(DevicePath,SerialType)) return 1;
-// WRITE 
+// MOVE 
   std::cerr << "displacement along (X,Y,Z)=("<<number(0)*step(0)<<","<<0<<","<<0<<") steps at (vX,vY,vZ)=("<<velocity(0)<<","<<0<<","<<0<<") step(s) per second speed.\n"<<std::flush;
   for(int i=0;i<number(0);++i)
   {

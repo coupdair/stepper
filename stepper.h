@@ -80,9 +80,9 @@ public:
     const std::string direction=(step<0)?std::string("-"):std::string("+");
     //axis
     const std::string suffix=";";
-    const std::string prefix="N";
+    const std::string prefix="R";
     const std::string formated_velocity=valueToString(velocity);
-    const std::string command=direction+axis+suffix+prefix+formated_velocity+suffix;
+    const std::string command=direction+axis+suffix+prefix+axis+formated_velocity+suffix;
     return command;//e.g. "+X;RX1000"
   }
 
@@ -98,7 +98,7 @@ public:
   {
     const std::string prefix="N";
     //axis
-    const std::string formated_step=valueToString(step);
+    const std::string formated_step=valueToString(std::abs(step));
     const std::string suffix=";";
     const std::string command=prefix+axis+formated_step+suffix;
     return command;//e.g. "NX123;"

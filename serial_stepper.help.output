@@ -4,14 +4,15 @@
  usage: ./stepper -h -I
         ./stepper -nx 10 -sx 1 -vx 1000 --device-type uControlXYZ
  version: v0.1.2
- compilation date:  (May 29 2012, 23:50:16)
+ compilation date:  (May 30 2012, 15:30:31)
 
     --help           true                     help (or -h option)
     --info           false                    show compilation options (or -I option)
     --device-type    uControlXYZ              Type of stepper device
     --device-path    /dev/ttyUSB0             Path of stepper device
     --serial-type    serial_system            Type of serial device for stepper (i.e. serial_termios or serial_system)
-    -sx              100                      displacement step along X axis.
-    -vx              1000                     displacement velocity along X axis.
+    -sx              100                      displacement step along X axis (e.g. -10 steps to go backward, i.e. displacement can be positive or negative).
+    -sy              100                      displacement step along Y axis.
+    -vx              1000                     displacement velocity along X axis (note: absolute velocity, i.e. could not be negative).
     -nx              10                       number of displacement along X axis.
     --wait-time      500                      wait time between steps in ms.
