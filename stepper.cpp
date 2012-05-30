@@ -113,6 +113,7 @@ version: "+std::string(VERSION)+"\n compilation date: " \
   {
   const unsigned int velocity_x=cimg_option("-vx",1000,"displacement velocity along X axis (note: absolute velocity, i.e. could not be negative).");
   velocity(0)=velocity_x;
+  velocity(1)=velocity_x;
   }
   ///number of steps
   cimg_library::CImg<int> number(3);number.fill(0);

@@ -104,6 +104,42 @@ public:
     return command;//e.g. "NX123;"
   }
 
+  //! move once using 1D step and 1D velocity along specific axis
+  /** 
+   *
+   * @param[in] axis_index=axis index (using axis[axis_index])
+   * @param[in] step=steps along specified axis
+   * @param[in] velocity=velocity for axis
+   *
+   * @return true on success, false otherwise
+   */
+  bool move(const int axis_index,const int step,const int velocity)
+  {
+    //null displacement
+    if(step==0) return true;
+    //other displacement
+    std::string command;
+    ///Set direction and velocity (e.g. "+X;RX1000;")
+    command=set_directionNvelocity_command(step,velocity,axis[axis_index]);
+std::cerr<<"Set direction and velocity: write=|"<<command<<"|"<<std::flush;
+    if(!pComStepper->writes(command)) return false;
+//    pComStepper->reads(command);
+//std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
+    ///Set displacement
+    command=set_step_command(step,axis[axis_index]);//e.g. "NX123;"
+std::cerr<<"Set displacement: write=|"<<command<<"|"<<std::flush;
+    if(!pComStepper->writes(command)) return false;
+//    pComStepper->reads(command);
+//std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
+    ///Execute displacement
+    command="M"+axis[axis_index]+";";//e.g. "MX;";
+std::cerr<<"Make displacement: write=|"<<command<<"|"<<std::flush;
+    if(!pComStepper->writes(command)) return false;
+//    pComStepper->reads(command);
+//std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
+    return true;
+  }//move
+
   //! move once using 3D step (and 3D velocity)
   /** 
    *
@@ -114,28 +150,17 @@ public:
    */
   bool move(const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity)
   {
-    //null displacement
-    if(step(0)==0) return true;
-    //other displacement
-    std::string command;
-    ///Set direction and velocity (e.g. "+X;RX1000;")
-    command=set_directionNvelocity_command(step(0),velocity(0),axis[0]);
-std::cerr<<"Set direction and velocity: write=|"<<command<<"|"<<std::flush;
-    if(!pComStepper->writes(command)) return false;
-//    pComStepper->reads(command);
-//std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
-    ///Set displacement
-    command=set_step_command(step(0),axis[0]);//e.g. "NX123;"
-std::cerr<<"Set displacement: write=|"<<command<<"|"<<std::flush;
-    if(!pComStepper->writes(command)) return false;
-//    pComStepper->reads(command);
-//std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
-    ///Execute displacement
-    command="M"+axis[0]+";";//e.g. "MX;";
-std::cerr<<"Make displacement: write=|"<<command<<"|"<<std::flush;
-    if(!pComStepper->writes(command)) return false;
-//    pComStepper->reads(command);
-//std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
+    cimg_forX(step,i)
+    {
+      if(!move(i,step(i),velocity(i)))
+      {
+        std::cerr<<"error: while moving "<<axis[i]<<" axis (i.e. index="<<i<<").\n"<<std::flush;
+        return false;
+      }
+      //wait for the movement ends
+//! \todo use blocking RS232 functions
+      if(step(i)!=0) cimg_library::cimg::wait(1000);
+    }//axis loop
     return true;
   }//move
 
