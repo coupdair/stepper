@@ -81,14 +81,83 @@
 //stepper library
 #include "stepper.h"
 
+//!
+/**
+ * \param[in] stepper: displacement stage device (should be already open)
+ * \param[in] number: number of iteration in the moving loop
+ * \param[in] step: 3D displacement in step (i.e. size should be 3)
+ * \param[in] velocity: 3D velocity in step per second (i.e. size should be 3)
+ * \param[in] wait_time: minimum delay between each loop iteration
+**/
+int moving(Cstepper &stepper,const int number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time)
+{
+///input checks
+  if(step.size()!=3) return 3;
+  if(velocity.size()!=3) return 3;
+///movement message
+  std::cerr<<"full displacement along "<<
+ #ifdef cimg_use_vt100
+  cimg_library::cimg::t_purple<<
+ #endif
+  "(X,Y,Z)=("<<number*step(0)<<","<<number*step(1)<<","<<number*step(2)<<") steps"<<
+ #ifdef cimg_use_vt100
+  cimg_library::cimg::t_normal<<
+ #endif
+  " at (vX,vY,vZ)=("<<velocity(0)<<","<<velocity(1)<<","<<velocity(2)<<") step(s) per second speed.\n"<<std::flush;
+///linear 3D displacement loop
+  for(int i=0;i<number;++i)
+  {
+///* position message
+    std::cerr << "moving by "<<
+   #ifdef cimg_use_vt100
+    cimg_library::cimg::t_purple<<
+   #endif
+    "(X,Y,Z)=("<<i*step(0)<<","<<i*step(1)<<","<<i*step(2)<<") steps"<<
+   #ifdef cimg_use_vt100
+    cimg_library::cimg::t_normal<<
+   #endif
+    " over entire displacement of ("<<number*step(0)<<","<<number*step(1)<<","<<number*step(2)<<") steps.\n"<<std::flush;
+///* move
+    if(!stepper.move(step,velocity)) return 1;
+///* position message
+    std::cerr << "actual displacement "<<
+   #ifdef cimg_use_vt100
+    cimg_library::cimg::t_green<<
+   #endif
+    "(X,Y,Z)=("<<i*step(0)<<","<<i*step(1)<<","<<i*step(2)<<")"<<
+   #ifdef cimg_use_vt100
+    cimg_library::cimg::t_normal<<
+   #endif
+    " steps.\n"<<std::flush;
+///* wait a while for user
+    cimg_library::cimg::wait(wait_time);
+  }//step loop
+  return 0;
+}//move
+
+int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time)
+{
+std::cerr<<"error: "<<
+#ifdef cimg_use_vt100
+cimg_library::cimg::t_red<<
+#endif
+"scan mode not implemented, yet !\n"<<
+#ifdef cimg_use_vt100
+cimg_library::cimg::t_normal<<
+#endif
+std::flush;
+  return 0;
+}//scan
+
 int main(int argc, char *argv[])
 { 
 //commmand line options
  ///usage
   cimg_usage(std::string("stepper program of the Laboratory of Mechanics in Lille (LML) is intended to make translation displacement using a stepping motor, \
 it uses different GNU libraries (see --info option)\n\n \
-usage: ./stepper -h -I\n \
-       ./stepper -nx 10 -sx 1 -vx 1000 --device-type uControlXYZ\n \
+usage: ./stepper -h -I #help and compilation information\n \
+       ./stepper -n 10 -sx 1 -vx 1000 --device-type uControlXYZ #3D linear moving mode\n \
+       ./stepper --scan true -nx 10 -sx 1 -vx 1000 -ny 5 -sy 1 -vy 1000 #volume scanning mode\n \
 version: "+std::string(VERSION)+"\n compilation date: " \
             ).c_str());//cimg_usage
   ///information and help
@@ -122,7 +191,7 @@ version: "+std::string(VERSION)+"\n compilation date: " \
   }//velocity
   ///number of steps
   const int number_move=cimg_option("-n",10,"number of displacement in move mode only, i.e. default option (e.g. --scan false option).");
-  const bool scan=cimg_option("--scan",false,"set volume scanning mode, else default mode is moving mode (i.e. 3D linear movement).");
+  const bool do_scan=cimg_option("--scan",false,"set volume scanning mode, else default mode is moving mode (i.e. 3D linear movement).");
   cimg_library::CImg<int> number(3);number.fill(1);
   {
   const int number_x=cimg_option("-nx",10,"number of displacement along X axis (set --scan true option).");
@@ -140,48 +209,22 @@ version: "+std::string(VERSION)+"\n compilation date: " \
   Cstepper stepper;
 // OPEN 
   if(!stepper.open(DevicePath,SerialType)) return 1;
+  int error;
 //MOVE
-  if(!scan)
+  if(!do_scan)
   {//3D move
-  std::cerr<<"information: move mode\ndisplacement along "<<
-  #ifdef cimg_use_vt100
-  cimg_library::cimg::t_green<<
-  #endif
-  "(X,Y,Z)=("<<number_move*step(0)<<","<<number_move*step(1)<<","<<number_move*step(2)<<") steps"<<
-  #ifdef cimg_use_vt100
-  cimg_library::cimg::t_normal<<
-  #endif
-  " at (vX,vY,vZ)=("<<velocity(0)<<","<<velocity(1)<<","<<velocity(2)<<") step(s) per second speed.\n"<<std::flush;
-  for(int i=0;i<number_move;++i)
-  {
-    std::cerr << "actual displacement along "<<
-    #ifdef cimg_use_vt100
-    cimg_library::cimg::t_green<<
-    #endif
-    "(X,Y,Z)=("<<i*step(0)<<","<<i*step(1)<<","<<i*step(2)<<") steps"<<
-    #ifdef cimg_use_vt100
-    cimg_library::cimg::t_normal<<
-    #endif
-    " over entire displacement of ("<<number_move*step(0)<<","<<number_move*step(1)<<","<<number_move*step(2)<<") steps.\n"<<std::flush;
-    if(!stepper.move(step,velocity)) return 1;
-    cimg_library::cimg::wait(wait_time);
-  }//step loop
+    std::cerr<<"information: move mode\n";
+    error=moving(stepper,number_move,step,velocity,wait_time);
   }//move
 //SCAN
   else
   {
-std::cerr<<"error: "<<
-#ifdef cimg_use_vt100
-cimg_library::cimg::t_red<<
-#endif
-"scan mode not implemented, yet !\n"<<
-#ifdef cimg_use_vt100
-cimg_library::cimg::t_normal<<
-#endif
-std::flush;
+    std::cerr<<"information: scan mode\n";
+    error=scanning(stepper,number,step,velocity,wait_time);
   }//volume scan
 //CLOSE
   stepper.close();
+  if(error!=0) {std::cerr<<"error: "<<std::string(do_scan?"scann":"mov")<<"ing function returns error="<<error<<".\n"; return error;}
   return 0;
 }//main
 
