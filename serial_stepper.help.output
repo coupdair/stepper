@@ -3,16 +3,23 @@
 
  usage: ./stepper -h -I
         ./stepper -nx 10 -sx 1 -vx 1000 --device-type uControlXYZ
- version: v0.1.3
- compilation date:  (May 30 2012, 17:38:38)
+ version: v0.1.4
+ compilation date:  (May 31 2012, 13:43:18)
 
     --help           true                     help (or -h option)
     --info           false                    show compilation options (or -I option)
-    --device-type    uControlXYZ              Type of stepper device
-    --device-path    /dev/ttyUSB0             Path of stepper device
-    --serial-type    serial_system            Type of serial device for stepper (i.e. serial_termios or serial_system)
+    --device-type    uControlXYZ              type of stepper device
+    --device-path    /dev/ttyUSB0             path of stepper device
+    --serial-type    serial_system            type of serial device for stepper (i.e. serial_termios or serial_system)
     -sx              100                      displacement step along X axis (e.g. -10 steps to go backward, i.e. displacement can be positive or negative).
     -sy              100                      displacement step along Y axis.
+    -sz              100                      displacement step along Z axis.
     -vx              1000                     displacement velocity along X axis (note: absolute velocity, i.e. could not be negative).
-    -nx              10                       number of displacement along X axis.
+    -vy              1000                     displacement velocity along Y axis.
+    -vz              1000                     displacement velocity along Z axis.
+    -n               10                       number of displacement in move mode only, i.e. default option (e.g. --scan false option).
+    --scan           false                    set volume scanning mode, else default mode is moving mode (i.e. 3D linear movement).
+    -nx              10                       number of displacement along X axis (set --scan true option).
+    -ny              10                       number of displacement along Y axis (set --scan true option).
+    -nz              1                        number of displacement along Z axis (set --scan true option).
     --wait-time      500                      wait time between steps in ms.
