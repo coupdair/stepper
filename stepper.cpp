@@ -178,6 +178,18 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
  #endif
   " at (vX,vY,vZ)=("<<velocity(0)<<","<<velocity(1)<<","<<velocity(2)<<") step(s) per second speed.\n"<<std::flush;
 
+#if cimg_display>0
+  //GUI to display scanning progress
+  cimg_library::CImg<char> volume(number(0),number(1),number(2));volume.fill(2);
+  //color
+  const unsigned char red[] = { 255,0,0 }, green[] = { 0,255,0 }, blue[] = { 0,0,255 };
+  cimg_library::CImg<unsigned char> colume(volume.width(),volume.height(),1,3);cimg_forXY(colume,x,y) colume.draw_point(x,y,blue);
+  //display
+  int zoom=50;
+  cimg_library::CImgDisplay progress(volume.width()*zoom,volume.height()*zoom);//,volume.depth()*zoom);
+  progress.set_title("scan progress");
+#endif //cimg_display
+
 ///* Z axis loop
   //set 1D displacement for Z axis
   cimg_library::CImg<int> stepz(3);stepz.fill(0);stepz(2)=step(2);//e.g. (0,0,10)
@@ -206,6 +218,14 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
         cimg_library::cimg::t_normal<<
        #endif
         "step position over entire scanning of ("<<number(0)*step(0)<<","<<number(1)*step(1)<<","<<number(2)*step(2)<<") steps.\n"<<std::flush;
+#if cimg_display>0
+        //set status
+        volume(i,j,k)=1;
+        //GUI to display scanning progress
+        colume.draw_point(i,j,green);
+colume.print("colume");
+        progress.display(colume.get_resize(zoom));
+#endif //cimg_display
 ///**** move along X axis
         //move along X axis
         if(number(0)>1)
@@ -302,6 +322,12 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
     if(!stepper.move(stepz,velocity)) return 1;
     cimg_library::cimg::wait(wait_time);
   }//Z reset
+
+#if cimg_display>0
+  //close GUI
+  progress.close();
+#endif //cimg_display
+
   return 0;
 }//scanning
 
