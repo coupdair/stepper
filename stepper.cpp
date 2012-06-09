@@ -81,8 +81,12 @@
 //stepper library
 #include "stepper.h"
 
-//!
+//!move several time by a 3D displacement (note: no reset to original position)
 /**
+ * move several time by a 3D displacement i.e. with in a loop makes the same 3D displacement.
+ * \note displacement could be either 1D, 2D or 3D in any direction.
+ * \note no reset to original position.
+ *
  * \param[in] stepper: displacement stage device (should be already open)
  * \param[in] number: number of iteration in the moving loop
  * \param[in] step: 3D displacement in step (i.e. size should be 3)
@@ -133,21 +137,115 @@ int moving(Cstepper &stepper,const int number,const cimg_library::CImg<int> &ste
     cimg_library::cimg::wait(wait_time);
   }//step loop
   return 0;
-}//move
+}//moving
 
-int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time)
+//!scan a full volume, i.e. all positions of the volume (note: reset to original position with mechanical jitter)
+/**
+ * scan a volume, i.e. make all displacement along the 3 axes to do each position in the volume.
+ * \note reset to original position, especially in order to make 3D position scanning in each direction loop.
+ * \note could be used as 1D line, column or depth scanning for any axis scan, or even 2D plane or slice scanning.
+ *
+ * \param[in] stepper: displacement stage device (should be already open)
+ * \param[in] number: number of iteration in each of the scanning loops (i.e. number of positions for the 3 axes; size should be 3)
+ * \param[in] step: 3D displacement in step (i.e. size should be 3)
+ * \param[in] velocity: 3D velocity in step per second (i.e. size should be 3)
+ * \param[in] wait_time: minimum delay between each loop displacement
+ * \param[in] mechanical_jitter: mechanical jitter to perform a good reset for any axes
+**/
+int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time, const unsigned int mechanical_jitter)
 {
-std::cerr<<"error: "<<
-#ifdef cimg_use_vt100
-cimg_library::cimg::t_red<<
-#endif
-"scan mode not implemented, yet !\n"<<
-#ifdef cimg_use_vt100
-cimg_library::cimg::t_normal<<
-#endif
-std::flush;
+///set signed mechanical jitter
+  //set mechanical jitter for all axes with same sign as corresponding displacement.
+  cimg_library::CImg<int>  mj(3);
+  cimg_forX(mj,a) mj(a)=((step(a)>0)?1:-1)*mechanical_jitter;
+
+///* Z axis loop
+  //set 1D displacement for Z axis
+  cimg_library::CImg<int> stepz(3);stepz.fill(0);stepz(2)=step(2);//e.g. (0,0,10)
+  //Z axis loop
+  for(int k=0;k<number(2);++k)
+  {
+///** Y axis loop
+    //set 1D displacement for Y axis
+    cimg_library::CImg<int> stepy(3);stepy.fill(0);stepy(1)=step(1);//e.g. (0,10,0)
+    //Y axis loop
+    for(int j=0;j<number(1);++j)
+    {
+///*** X axis loop
+      //set 1D displacement for X axis
+      cimg_library::CImg<int> stepx(3);stepx.fill(0);stepx(0)=step(0);//e.g. (10,0,0)
+      //X axis loop
+      for(int i=0;i<number(0);++i)
+      {
+        std::cerr << "actual displacement along (X,Y,Z)=("<<i*step(0)<<","<<0<<","<<0<<") steps over entire displacement of ("<<number(0)*step(0)<<","<<0<<","<<0<<") steps.\n"<<std::flush;
+///**** move along X axis
+        //move along X axis
+        if(number(0)>1)
+        {//X move only if more than one line to do
+          if(!stepper.move(stepx,velocity)) return 1;
+        }//X move
+///**** wait a while for user
+        cimg_library::cimg::wait(wait_time);
+      }//X axis loop
+///*** reset X axis
+      //go back to zero on X axis (i.e. move backward along X axis)
+      if(number(0)>1)
+      {//X reset (with mechanical jitter)
+        // 1. move backward with mechanical jitter in X step // mechanical jitter = mj
+        stepx(0)=-(step(0)*number(0)+mj(0));
+        if(!stepper.move(stepx,velocity)) return 1;
+        cimg_library::cimg::wait(wait_time);
+        // 2. move forward mechanical jitter in X step
+        stepx(0)=mj(0);
+        if(!stepper.move(stepx,velocity)) return 1;
+        cimg_library::cimg::wait(wait_time);
+      }//X reset
+///*** move along Y axis
+      //move along Y axis
+      if(number(1)>1)
+      {//Y move only if more than one column to do
+        if(!stepper.move(stepy,velocity)) return 1;
+      }//Y move
+///*** wait a while for user
+      cimg_library::cimg::wait(wait_time);
+    }//Y axis loop
+///** reset Y axis
+    //go back to zero on Y axis (i.e. move backward along Y axis)
+    if(number(1)>1)
+    {//Y reset (with mechanical jitter)
+      // 1. move backward with mechanical jitter in Y step // mechanical jitter = mj
+      stepy(1)=-(step(1)*number(1)+mj(1));
+      if(!stepper.move(stepy,velocity)) return 1;
+      cimg_library::cimg::wait(wait_time);
+      // 2. move forward mechanical jitter in Y step
+      stepy(1)=mj(1);
+      if(!stepper.move(stepy,velocity)) return 1;
+      cimg_library::cimg::wait(wait_time);
+    }//Y reset
+///** move along Z axis
+    //move along Z axis
+    if(number(2)>1)
+    {//Z move only if more than one slice to do
+      if(!stepper.move(stepz,velocity)) return 1;
+    }//Z move
+///** wait a while for user
+    cimg_library::cimg::wait(wait_time);
+  }//Z axis loop
+///* reset Z axis
+  //go back to zero on Z axis (i.e. move backward along Z axis)
+  if(number(2)>1)
+  {//Z reset (with mechanical jitter)
+    // 1. move backward with mechanical jitter in Z step // mechanical jitter = mj
+    stepz(2)=-(step(2)*number(2)+mj(2));
+    if(!stepper.move(stepz,velocity)) return 1;
+    cimg_library::cimg::wait(wait_time);
+    // 2. move forward mechanical jitter in Z step
+    stepz(2)=mj(2);
+    if(!stepper.move(stepz,velocity)) return 1;
+    cimg_library::cimg::wait(wait_time);
+  }//Z reset
   return 0;
-}//scan
+}//scanning
 
 int main(int argc, char *argv[])
 { 
@@ -158,7 +256,7 @@ it uses different GNU libraries (see --info option)\n\n \
 usage: ./stepper -h -I #help and compilation information\n \
        ./stepper -n 10 -sx 1 -vx 1000 --device-type uControlXYZ #3D linear moving mode\n \
        ./stepper --scan true -nx 10 -sx 1 -vx 1000 -ny 5 -sy 1 -vy 1000 #volume scanning mode\n \
-version: "+std::string(VERSION)+"\n compilation date: " \
+version: "+std::string(STEPPER_VERSION)+"\t(other library versions: RS232."+std::string(RS232_VERSION)+")\n compilation date: " \
             ).c_str());//cimg_usage
   ///information and help
   const bool show_h   =cimg_option("-h",    false,NULL);//-h hidden option
@@ -192,6 +290,7 @@ version: "+std::string(VERSION)+"\n compilation date: " \
   ///number of steps
   const int number_move=cimg_option("-n",10,"number of displacement in move mode only, i.e. default option (e.g. --scan false option).");
   const bool do_scan=cimg_option("--scan",false,"set volume scanning mode, else default mode is moving mode (i.e. 3D linear movement).");
+  const unsigned int mechanical_jitter=cimg_option("--jitter",10,"set mechanical jitter to go back to origin for scanning mode only (i.e. reset position with same mechanical direction, could not be negative).");
   cimg_library::CImg<int> number(3);number.fill(1);
   {
   const int number_x=cimg_option("-nx",10,"number of displacement along X axis (set --scan true option).");
@@ -220,7 +319,7 @@ version: "+std::string(VERSION)+"\n compilation date: " \
   else
   {
     std::cerr<<"information: scan mode\n";
-    error=scanning(stepper,number,step,velocity,wait_time);
+    error=scanning(stepper,number,step,velocity,wait_time,mechanical_jitter);
   }//volume scan
 //CLOSE
   stepper.close();

@@ -1,5 +1,5 @@
 #compile
-clear; make clean; make; ./stepper -h -I
+clear; make clean && make && ./stepper -h -I
 
 #documentation
 firefox doc/html/index.html &
@@ -12,7 +12,14 @@ git commit -a
 
 #run
 ##run uControl (XYZ)
-./stepper --device-type uControlXYZ --serial-type serial_system
+###single move
+./stepper --device-type uControlXYZ --serial-type serial_system -n 1
+###multiple move
+./stepper --device-type uControlXYZ --serial-type serial_system -n 123
+###slice scanning
+./stepper --device-type uControlXYZ --serial-type serial_system --scan -nx 4 -ny 4
+###volume scanning
+./stepper --device-type uControlXYZ --serial-type serial_system --scan -nx 4 -ny 4 -nz 16 --jitter 50
 
 ##test
 ./stepper --device-path /dev/stdout

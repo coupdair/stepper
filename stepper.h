@@ -30,7 +30,7 @@ public:
     class_name="Cstepper_uControlXYZ";
 #endif
     ///set library version (information only)
-    class_version=VERSION;
+    class_version=STEPPER_VERSION;
     ///set axis names
     axis.push_back("X");
     axis.push_back("Y");
