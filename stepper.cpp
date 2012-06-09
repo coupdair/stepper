@@ -152,7 +152,11 @@ int moving(Cstepper &stepper,const int number,const cimg_library::CImg<int> &ste
  * \param[in] wait_time: minimum delay between each loop displacement
  * \param[in] mechanical_jitter: mechanical jitter to perform a good reset for any axes
 **/
-int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time, const unsigned int mechanical_jitter)
+int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time, const unsigned int mechanical_jitter
+#if cimg_display>0
+,const unsigned int zoom=100,const bool do_display=false
+#endif //cimg_display
+)
 {
 ///set signed mechanical jitter
   //set mechanical jitter for all axes with same sign as corresponding displacement.
@@ -183,11 +187,15 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
   cimg_library::CImg<char> volume(number(0),number(1),number(2));volume.fill(2);
   //color
   const unsigned char red[] = { 255,0,0 }, green[] = { 0,255,0 }, blue[] = { 0,0,255 };
-  cimg_library::CImg<unsigned char> colume(volume.width(),volume.height(),1,3);cimg_forXY(colume,x,y) colume.draw_point(x,y,blue);
+  cimg_library::CImg<unsigned char> colume;
   //display
-  int zoom=50;
-  cimg_library::CImgDisplay progress(volume.width()*zoom,volume.height()*zoom);//,volume.depth()*zoom);
-  progress.set_title("scan progress");
+  cimg_library::CImgDisplay progress;
+  if(do_display)
+  {
+    colume.assign(volume.width(),volume.height(),1,3);
+    progress.assign(volume.width()*zoom,volume.height()*zoom);//,volume.depth()*zoom);
+    progress.set_title("scan progress");
+  }
 #endif //cimg_display
 
 ///* Z axis loop
@@ -196,6 +204,16 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
   //Z axis loop
   for(int k=0;k<number(2);++k)
   {
+
+#if cimg_display>0
+    if(do_display)
+    {
+    //current slice
+      cimg_forXY(colume,x,y) colume.draw_point(x,y,blue);
+      progress.set_title("scan progress (slice#%d/%d)",k,number(2));
+    }//do_display
+#endif //cimg_display
+
 ///** Y axis loop
     //set 1D displacement for Y axis
     cimg_library::CImg<int> stepy(3);stepy.fill(0);stepy(1)=step(1);//e.g. (0,10,0)
@@ -221,10 +239,12 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
 #if cimg_display>0
         //set status
         volume(i,j,k)=1;
-        //GUI to display scanning progress
-        colume.draw_point(i,j,green);
-colume.print("colume");
-        progress.display(colume.get_resize(zoom));
+        if(do_display)
+        {
+          //GUI to display scanning progress
+          colume.draw_point(i,j,green);
+          progress.display(colume.get_resize(zoom));
+        }//do_display
 #endif //cimg_display
 ///**** move along X axis
         //move along X axis
@@ -386,6 +406,10 @@ version: "+std::string(STEPPER_VERSION)+"\t(other library versions: RS232."+std:
   }//number
   ///wait time between steps
   const int wait_time=cimg_option("--wait-time",500,"wait time between steps in ms.");
+#if cimg_display>0
+  const bool do_display=cimg_option("-X",false,"activate GUI (i.e. progress display during scan mode only; set --scan true option).");
+  const unsigned int zoom=cimg_option("--GUI-progress-zoom",100,"GUI progress display zoom.");
+#endif
   ///stop if help requested
   if(show_help) {/*print_help(std::cerr);*/return 0;}
 //stepper device object
@@ -403,7 +427,7 @@ version: "+std::string(STEPPER_VERSION)+"\t(other library versions: RS232."+std:
   else
   {
     std::cerr<<"information: scan mode\n";
-    error=scanning(stepper,number,step,velocity,wait_time,mechanical_jitter);
+    error=scanning(stepper,number,step,velocity,wait_time,mechanical_jitter,zoom,do_display);
   }//volume scan
 //CLOSE
   stepper.close();
