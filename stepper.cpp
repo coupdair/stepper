@@ -81,7 +81,7 @@
 //stepper library
 #include "stepper.h"
 
-//!move several time by a 3D displacement (note: no reset to original position)
+//! move several time by a 3D displacement (note: no reset to original position)
 /**
  * move several time by a 3D displacement i.e. with in a loop makes the same 3D displacement.
  * \note displacement could be either 1D, 2D or 3D in any direction.
@@ -116,7 +116,7 @@ int moving(Cstepper &stepper,const int number,const cimg_library::CImg<int> &ste
    #ifdef cimg_use_vt100
     cimg_library::cimg::t_purple<<
    #endif
-    "(X,Y,Z)=("<<i*step(0)<<","<<i*step(1)<<","<<i*step(2)<<") steps"<<
+    "(X,Y,Z)=("<<step(0)<<","<<step(1)<<","<<step(2)<<") steps"<<
    #ifdef cimg_use_vt100
     cimg_library::cimg::t_normal<<
    #endif
@@ -124,7 +124,7 @@ int moving(Cstepper &stepper,const int number,const cimg_library::CImg<int> &ste
 ///* move
     if(!stepper.move(step,velocity)) return 1;
 ///* position message
-    std::cerr << "actual displacement "<<
+    std::cerr << "actual position "<<
    #ifdef cimg_use_vt100
     cimg_library::cimg::t_green<<
    #endif
@@ -139,7 +139,7 @@ int moving(Cstepper &stepper,const int number,const cimg_library::CImg<int> &ste
   return 0;
 }//moving
 
-//!scan a full volume, i.e. all positions of the volume (note: reset to original position with mechanical jitter)
+//! scan a full volume, i.e. all positions of the volume (note: reset to original position with mechanical jitter)
 /**
  * scan a volume, i.e. make all displacement along the 3 axes to do each position in the volume.
  * \note reset to original position, especially in order to make 3D position scanning in each direction loop.
@@ -159,6 +159,25 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
   cimg_library::CImg<int>  mj(3);
   cimg_forX(mj,a) mj(a)=((step(a)>0)?1:-1)*mechanical_jitter;
 
+///scanning message
+  std::cerr<<"full scanning volume of "<<
+ #ifdef cimg_use_vt100
+  cimg_library::cimg::t_purple<<
+ #endif
+  "size (sX,sY,sZ)=("<<number(0)*step(0)<<","<<number(1)*step(1)<<","<<number(2)*step(2)<<") steps"<<
+ #ifdef cimg_use_vt100
+  cimg_library::cimg::t_normal<<
+ #endif
+  " by "<<
+ #ifdef cimg_use_vt100
+  cimg_library::cimg::t_purple<<
+ #endif
+  "displacement (dX,dY,dZ)=("<<step(0)<<","<<step(1)<<","<<step(2)<<") steps"<<
+ #ifdef cimg_use_vt100
+  cimg_library::cimg::t_normal<<
+ #endif
+  " at (vX,vY,vZ)=("<<velocity(0)<<","<<velocity(1)<<","<<velocity(2)<<") step(s) per second speed.\n"<<std::flush;
+
 ///* Z axis loop
   //set 1D displacement for Z axis
   cimg_library::CImg<int> stepz(3);stepz.fill(0);stepz(2)=step(2);//e.g. (0,0,10)
@@ -177,7 +196,16 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
       //X axis loop
       for(int i=0;i<number(0);++i)
       {
-        std::cerr << "actual displacement along (X,Y,Z)=("<<i*step(0)<<","<<0<<","<<0<<") steps over entire displacement of ("<<number(0)*step(0)<<","<<0<<","<<0<<") steps.\n"<<std::flush;
+///**** position message
+        std::cerr << "actual displacement to "<<
+       #ifdef cimg_use_vt100
+        cimg_library::cimg::t_green<<
+       #endif
+        "(X,Y,Z)=("<<i*step(0)<<","<<j*step(1)<<","<<k*step(2)<<") "<<
+       #ifdef cimg_use_vt100
+        cimg_library::cimg::t_normal<<
+       #endif
+        "step position over entire scanning of ("<<number(0)*step(0)<<","<<number(1)*step(1)<<","<<number(2)*step(2)<<") steps.\n"<<std::flush;
 ///**** move along X axis
         //move along X axis
         if(number(0)>1)
@@ -191,6 +219,16 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
       //go back to zero on X axis (i.e. move backward along X axis)
       if(number(0)>1)
       {//X reset (with mechanical jitter)
+        // 0. reset message
+        std::cerr<<
+       #ifdef cimg_use_vt100
+        cimg_library::cimg::t_purple<<
+       #endif
+        "reset X axis to (X,Y,Z)=(0,"<<j*step(1)<<","<<k*step(2)<<")"<<
+       #ifdef cimg_use_vt100
+        cimg_library::cimg::t_normal<<
+       #endif
+        ".\n"<<std::flush;
         // 1. move backward with mechanical jitter in X step // mechanical jitter = mj
         stepx(0)=-(step(0)*number(0)+mj(0));
         if(!stepper.move(stepx,velocity)) return 1;
@@ -213,6 +251,16 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
     //go back to zero on Y axis (i.e. move backward along Y axis)
     if(number(1)>1)
     {//Y reset (with mechanical jitter)
+      // 0. reset message
+      std::cerr<<
+     #ifdef cimg_use_vt100
+      cimg_library::cimg::t_purple<<
+     #endif
+      "reset Y axis to (X,Y,Z)=(0,0,"<<k*step(2)<<")"<<
+     #ifdef cimg_use_vt100
+      cimg_library::cimg::t_normal<<
+     #endif
+      ".\n"<<std::flush;
       // 1. move backward with mechanical jitter in Y step // mechanical jitter = mj
       stepy(1)=-(step(1)*number(1)+mj(1));
       if(!stepper.move(stepy,velocity)) return 1;
@@ -235,6 +283,16 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
   //go back to zero on Z axis (i.e. move backward along Z axis)
   if(number(2)>1)
   {//Z reset (with mechanical jitter)
+    // 0. reset message
+    std::cerr<<
+   #ifdef cimg_use_vt100
+    cimg_library::cimg::t_purple<<
+   #endif
+    "reset Z axis to (X,Y,Z)=(0,0,0)"<<
+   #ifdef cimg_use_vt100
+    cimg_library::cimg::t_normal<<
+   #endif
+    ".\n"<<std::flush;
     // 1. move backward with mechanical jitter in Z step // mechanical jitter = mj
     stepz(2)=-(step(2)*number(2)+mj(2));
     if(!stepper.move(stepz,velocity)) return 1;
