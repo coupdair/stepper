@@ -184,14 +184,16 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
 
 #if cimg_display>0
   //GUI to display scanning progress
-  cimg_library::CImg<char> volume(number(0),number(1),number(2));volume.fill(2);
+  cimg_library::CImg<char> volume(number(0),number(1),number(2));volume.fill(2);//0=fail(red), 1=done(green), 2=to_do(blue)
   //color
+//! \todo use \c volume for setting colors to \c colume (e.g. \c red color in case of position failure; need position check stepper)
   const unsigned char red[] = { 255,0,0 }, green[] = { 0,255,0 }, blue[] = { 0,0,255 };
   cimg_library::CImg<unsigned char> colume;
   //display
   cimg_library::CImgDisplay progress;
   if(do_display)
   {
+//! \todo assign both \c colume and \c progress for displaying at best an image (i.e. 2D)
     colume.assign(volume.width(),volume.height(),1,3);
     progress.assign(volume.width()*zoom,volume.height()*zoom);//,volume.depth()*zoom);
     progress.set_title("scan progress");
@@ -210,6 +212,7 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
     {
     //current slice
       cimg_forXY(colume,x,y) colume.draw_point(x,y,blue);
+//! \todo remove slice in title if number(2)==1
       progress.set_title("scan progress (slice#%d/%d)",k,number(2));
     }//do_display
 #endif //cimg_display
