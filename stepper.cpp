@@ -165,7 +165,8 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
 
 ///reset to (0,0,0)
   stepper.reset();
-  stepper.position();
+  cimg_library::CImg<int> position(3);
+  stepper.position(position);
 
 ///scanning message
   std::cerr<<"full scanning volume of "<<
@@ -245,12 +246,17 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
         "step position over entire scanning of ("<<number(0)*step(0)<<","<<number(1)*step(1)<<","<<number(2)*step(2)<<") steps.\n"<<std::flush;
 #if cimg_display>0
         //set status
-        volume(i,j,k)=1;
-stepper.position();
+        stepper.position(position);
+        if( (position(0)==i)
+          &&(position(1)==j)
+          &&(position(2)==k) )
+          volume(i,j,k)=1;
+        else
+          volume(i,j,k)=0;
         if(do_display)
         {
           //GUI to display scanning progress
-          colume.draw_point(i,j,green);
+          colume.draw_point(i,j,(volume(i,j,k)==1)?green:red);
           progress.display(colume.get_resize(zoom));
         }//do_display
 #endif //cimg_display
@@ -350,12 +356,18 @@ stepper.position();
     if(!stepper.move(stepz,velocity)) return 1;
     cimg_library::cimg::wait(wait_time);
   }//Z reset
-stepper.position();
 
 #if cimg_display>0
   //close GUI
   progress.close();
 #endif //cimg_display
+
+  //check back to origin
+  stepper.position(position);
+  if( (position(0)!=0)
+    ||(position(1)!=0)
+    ||(position(2)!=0) )
+     return -1;
 
   return 0;
 }//scanning
@@ -439,6 +451,18 @@ version: "+std::string(STEPPER_VERSION)+"\t(other library versions: RS232."+std:
   {
     std::cerr<<"information: scan mode\n";
     error=scanning(stepper,number,step,velocity,wait_time,mechanical_jitter,zoom,do_display);
+    if(error==-1)
+    {
+      std::cerr<<
+     #ifdef cimg_use_vt100
+      cimg_library::cimg::t_green<<
+     #endif
+      "warning: scanning function did not return to origin !"<<
+     #ifdef cimg_use_vt100
+      cimg_library::cimg::t_normal<<
+     #endif
+      " (need manual origin reset)\n";
+    }
   }//volume scan
 //CLOSE
   stepper.close();

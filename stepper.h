@@ -2,7 +2,9 @@
 #define STEPPER
 
 #include <vector>
-#include <sstream>
+#include <sstream> //ostringstream
+#include <string>
+#include <stdio.h> //sscanf
 #include "../rs232/serial_factory.h"
 
 class Cstepper
@@ -186,14 +188,56 @@ std::cerr<<"Make displacement: write=|"<<command<<"|"<<std::flush;
    *
    * @return 
    */
-  bool position()
+  bool position(int &x,int &y,int &z)
   {
     std::string ask="XYZ";
     std::string value;
     const int number_of_try=3;
     const int try_wait_time=20;
-    return pComReader->gets(ask,value,number_of_try,try_wait_time);
-  }//close
+    //get value (as string from RS232)
+    if(!pComReader->gets(ask,value,number_of_try,try_wait_time)) return false;
+    //get XYZ values (from string)
+/*
+    std::istringstream iss;iss.str(value);
+std::cerr<<"value="<<value<<".\n"<<std::flush;
+std::cerr<<"iss="<<iss<<".\n"<<std::flush;
+    std::string temp;
+    iss>>temp;
+std::cerr<<"temp="<<temp<<".\n"<<std::flush;
+    if(temp!="v:") {x=y=z=1235467890;return false;}
+    iss>>x;
+    iss>>y;
+    iss>>z;
+*/
+    if( sscanf(value.c_str(),"v: X=%d Y=%d Z=%d",&x,&y,&z)!=3 ) {x=y=z=1235467890;return false;}
+std::cerr<<
+   #ifdef cimg_use_vt100
+    cimg_library::cimg::t_green<<
+   #endif
+   "(x,y,z)=("<<x<<","<<y<<","<<z<<").\n"<<
+   #ifdef cimg_use_vt100
+    cimg_library::cimg::t_normal<<
+   #endif
+   std::flush;
+    return true;
+  }//position
+
+//use CImg
+#ifdef cimg_version
+  //! get position from reader
+  /** 
+   *
+   * @return 
+   */
+  bool position(cimg_library::CImg<int> &xyz)
+  {
+    int x,y,z;
+    if(!position(x,y,z)) return false;
+    xyz.assign(3);
+    xyz(0)=x;xyz(1)=y;xyz(2)=z;
+    return true;
+  }//position
+#endif //use CImg
 
   //! Close stepper
   /** 
