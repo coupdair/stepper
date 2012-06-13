@@ -247,9 +247,9 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
 #if cimg_display>0
         //set status
         stepper.position(position);
-        if( (position(0)==i)
-          &&(position(1)==j)
-          &&(position(2)==k) )
+        if( (position(0)==i*step(0))
+          &&(position(1)==j*step(1))
+          &&(position(2)==k*step(2)) )
           volume(i,j,k)=1;
         else
           volume(i,j,k)=0;

@@ -197,18 +197,6 @@ std::cerr<<"Make displacement: write=|"<<command<<"|"<<std::flush;
     //get value (as string from RS232)
     if(!pComReader->gets(ask,value,number_of_try,try_wait_time)) return false;
     //get XYZ values (from string)
-/*
-    std::istringstream iss;iss.str(value);
-std::cerr<<"value="<<value<<".\n"<<std::flush;
-std::cerr<<"iss="<<iss<<".\n"<<std::flush;
-    std::string temp;
-    iss>>temp;
-std::cerr<<"temp="<<temp<<".\n"<<std::flush;
-    if(temp!="v:") {x=y=z=1235467890;return false;}
-    iss>>x;
-    iss>>y;
-    iss>>z;
-*/
     if( sscanf(value.c_str(),"v: X=%d Y=%d Z=%d",&x,&y,&z)!=3 ) {x=y=z=1235467890;return false;}
 std::cerr<<
    #ifdef cimg_use_vt100
