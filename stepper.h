@@ -17,6 +17,8 @@ public:
 private:
   //! communication with stepper
   Cserial* pComStepper;
+  //! communication with position reader
+  Cserial* pComReader;
 public:
   std::vector<std::string> axis;
   //! constructor
@@ -40,19 +42,24 @@ public:
   //! Open stepper device
   /** 
    *
-   * @param[in] port_path: path of serial port device
-   * @param[in] port_type: type of serial port (see \c Cserial_factory:: )
+   * @param[in] stepper_port_path: path of serial port device connected to stepper
+   * @param[in] stepper_port_type: type of serial port for stepper (see \c Cserial_factory:: )
+   * @param[in]  reader_port_path: path of serial port device connected to position reader
+   * @param[in]  reader_port_type: type of serial port for reader  (see \c Cserial_factory:: )
    *
    * @return 
    */
-  bool open(const std::string& port_path,std::string port_type="serial_system")
+  bool open(const std::string& stepper_port_path,const std::string& stepper_port_type,
+            const std::string&  reader_port_path,const std::string&  reader_port_type)
   {
     //choose serial
     Cserial_factory serial_factory;
-    pComStepper=serial_factory.create(port_type);
+    pComStepper=serial_factory.create(stepper_port_type);
+    pComReader= serial_factory.create( reader_port_type);
     //initialise
-
-    return pComStepper->opens(port_path);
+    if(!pComStepper->opens(stepper_port_path)) return false;
+    if(!pComReader->opens(  reader_port_path)) return false;
+    return true;
   }//open
 
   //! convert value to string
@@ -164,6 +171,30 @@ std::cerr<<"Make displacement: write=|"<<command<<"|"<<std::flush;
     return true;
   }//move
 
+  //! reset position reader
+  /** 
+   *
+   * @return 
+   */
+  bool reset()
+  {
+    return pComReader->writes("reset");
+  }//reset
+
+  //! get position from reader
+  /** 
+   *
+   * @return 
+   */
+  bool position()
+  {
+    std::string ask="XYZ";
+    std::string value;
+    const int number_of_try=3;
+    const int try_wait_time=20;
+    return pComReader->gets(ask,value,number_of_try,try_wait_time);
+  }//close
+
   //! Close stepper
   /** 
    *
@@ -171,7 +202,7 @@ std::cerr<<"Make displacement: write=|"<<command<<"|"<<std::flush;
    */
   bool close()
   {
-    return pComStepper->closes();
+    return (pComStepper->closes()&&pComReader->closes());
   }//close
 
 };//Cstepper class

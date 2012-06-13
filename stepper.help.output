@@ -4,14 +4,16 @@
  usage: ./stepper -h -I #help and compilation information
         ./stepper -n 10 -sx 1 -vx 1000 --device-type uControlXYZ #3D linear moving mode
         ./stepper --scan true -nx 10 -sx 1 -vx 1000 -ny 5 -sy 1 -vy 1000 #volume scanning mode
- version: v0.1.6	(other library versions: RS232.v0.3.0)
- compilation date:  (Jun  9 2012, 23:55:33)
+ version: v0.1.7	(other library versions: RS232.v0.3.2)
+ compilation date:  (Jun 13 2012, 14:24:40)
 
     --help           true                     help (or -h option)
     --info           false                    show compilation options (or -I option)
     --device-type    uControlXYZ              type of stepper device
-    --device-path    /dev/ttyUSB0             path of stepper device
-    --serial-type    serial_system            type of serial device for stepper (i.e. serial_termios or serial_system)
+    --stepper-device-path /dev/ttyUSB0             path of stepper device
+    --stepper-serial-type serial_system            type of serial device for stepper (i.e. serial_termios or serial_system)
+    --position-reader-device-path /dev/ttyUSB1             path of position reader device
+    --position-reader-serial-type serial_system            type of serial device for position reader (i.e. serial_termios or serial_system)
     -sx              100                      displacement step along X axis (e.g. -10 steps to go backward, i.e. displacement can be positive or negative).
     -sy              100                      displacement step along Y axis.
     -sz              100                      displacement step along Z axis.
@@ -26,4 +28,4 @@
     -nz              1                        number of displacement along Z axis (set --scan true option).
     --wait-time      500                      wait time between steps in ms.
     -X               false                    activate GUI (i.e. progress display during scan mode only; set --scan true option).
-    --GUI-zoom       100                      GUI progress display zoom.
+    --GUI-progress-zoom 100                      GUI progress display zoom.

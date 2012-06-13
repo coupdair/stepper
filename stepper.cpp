@@ -163,6 +163,10 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
   cimg_library::CImg<int>  mj(3);
   cimg_forX(mj,a) mj(a)=((step(a)>0)?1:-1)*mechanical_jitter;
 
+///reset to (0,0,0)
+  stepper.reset();
+  stepper.position();
+
 ///scanning message
   std::cerr<<"full scanning volume of "<<
  #ifdef cimg_use_vt100
@@ -242,6 +246,7 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
 #if cimg_display>0
         //set status
         volume(i,j,k)=1;
+stepper.position();
         if(do_display)
         {
           //GUI to display scanning progress
@@ -345,6 +350,7 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
     if(!stepper.move(stepz,velocity)) return 1;
     cimg_library::cimg::wait(wait_time);
   }//Z reset
+stepper.position();
 
 #if cimg_display>0
   //close GUI
@@ -371,9 +377,11 @@ version: "+std::string(STEPPER_VERSION)+"\t(other library versions: RS232."+std:
   bool show_info=cimg_option("-I",false,NULL);//-I hidden option
   if( cimg_option("--info",show_info,"show compilation options (or -I option)") ) {show_info=true;cimg_library::cimg::info();}//same --info or -I option
   ///device
-  const std::string DeviceType=cimg_option("--device-type","uControlXYZ","type of stepper device");
-  const std::string DevicePath=cimg_option("--device-path","/dev/ttyUSB0","path of stepper device");
-  const std::string SerialType=cimg_option("--serial-type","serial_system","type of serial device for stepper (i.e. serial_termios or serial_system)");
+  const std::string StepperDeviceType=cimg_option("--device-type","uControlXYZ","type of stepper device");
+  const std::string StepperDevicePath=cimg_option("--stepper-device-path","/dev/ttyUSB0","path of stepper device");
+  const std::string StepperSerialType=cimg_option("--stepper-serial-type","serial_system","type of serial device for stepper (i.e. serial_termios or serial_system)");
+  const std::string  ReaderDevicePath=cimg_option("--position-reader-device-path","/dev/ttyUSB1","path of position reader device");
+  const std::string  ReaderSerialType=cimg_option("--position-reader-serial-type","serial_system","type of serial device for position reader (i.e. serial_termios or serial_system)");
   ///displacement
   cimg_library::CImg<int> step(3);step.fill(0);
   {
@@ -418,7 +426,7 @@ version: "+std::string(STEPPER_VERSION)+"\t(other library versions: RS232."+std:
 //stepper device object
   Cstepper stepper;
 // OPEN 
-  if(!stepper.open(DevicePath,SerialType)) return 1;
+  if(!stepper.open(StepperDevicePath,StepperSerialType,ReaderDevicePath,ReaderSerialType)) return 1;
   int error;
 //MOVE
   if(!do_scan)
