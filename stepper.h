@@ -129,7 +129,7 @@ public:
 
 class Cstepper_uControlXYZ: public Cstepper
 {
-private:
+protected:
   //! communication with stepper
   Cserial* pComStepper;
 public:
@@ -289,6 +289,162 @@ std::cerr<<"Make displacement: write=|"<<command<<"|"<<std::flush;
   }//close
 
 };//Cstepper_uControlXYZ class
+
+class Cstepper_uControlXYZ_reader: public Cstepper_uControlXYZ
+{
+protected:
+  //! communication with position reader
+  Cserial* pComReader;
+public:
+  //! constructor
+  /**
+   *
+  **/
+  Cstepper_uControlXYZ_reader()
+  {
+    Cstepper_uControlXYZ::Cstepper_uControlXYZ();
+    ///set class name (debug only)
+#if cimg_debug>1
+    class_name="Cstepper_uControlXYZ_reader";
+#endif
+  }//constructor
+
+  //! Open stepper device
+  /** 
+   *
+   * @param[in] stepper_port_path: path of serial port device connected to stepper
+   * @param[in] stepper_port_type: type of serial port for stepper (see \c Cserial_factory:: )
+   * @param[in]  reader_port_path: path of serial port device connected to position reader
+   * @param[in]  reader_port_type: type of serial port for reader  (see \c Cserial_factory:: )
+   *
+   * @return 
+   */
+  bool open(const std::string& stepper_port_path,const std::string& stepper_port_type,
+            const std::string&  reader_port_path,const std::string&  reader_port_type)
+  {
+    //choose serial
+    Cserial_factory serial_factory;
+    pComStepper=serial_factory.create(stepper_port_type);
+    pComReader= serial_factory.create( reader_port_type);
+    //initialise
+    if(!pComStepper->opens(stepper_port_path)) return false;
+    if(!pComReader->opens(  reader_port_path)) return false;
+    return true;
+  }//open
+
+  //! move once using 1D step and 1D velocity along specific axis
+  /** 
+   *
+   * @param[in] axis_index=axis index (using axis[axis_index])
+   * @param[in] step=steps along specified axis
+   * @param[in] velocity=velocity for axis
+   *
+   * @return true on success, false otherwise
+   */
+  bool move(const int axis_index,const int position,const int velocity)
+  {
+    //null displacement
+    if(position==0) return true;
+    //other displacement
+//! \todo force position
+/*
+read position
+check return true;
+loop to force absolute position
+*/
+    return true;
+  }//move
+
+  //! move once using 3D step (and 3D velocity)
+  /** 
+   *
+   * @param[in] step=steps in the 3 directions (XYZ)
+   * @param[in] velocity=velocities in the 3 directions (XYZ)
+   *
+   * @return true on success, false otherwise
+   */
+  bool move(const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity)
+  {
+    cimg_forX(step,i)
+    {
+      if(!move(i,step(i),velocity(i)))
+      {
+        std::cerr<<"error: while moving "<<axis_name[i]<<" axis (i.e. index="<<i<<").\n"<<std::flush;
+        return false;
+      }
+      //wait for the movement ends
+//! \todo use blocking RS232 functions
+      if(step(i)!=0) cimg_library::cimg::wait(1000);
+    }//axis loop
+    return true;
+  }//move
+
+  //! reset position reader
+  /** 
+   *
+   * @return 
+   */
+  bool reset()
+  {
+    return pComReader->writes("reset");
+  }//reset
+
+  //! get position from reader
+  /** 
+   *
+   * @return 
+   */
+  bool position(int &x,int &y,int &z)
+  {
+    std::string ask="XYZ";
+    std::string value;
+    const int number_of_try=3;
+    const int try_wait_time=20;
+    //get value (as string from RS232)
+    if(!pComReader->gets(ask,value,number_of_try,try_wait_time)) return false;
+    //get XYZ values (from string)
+    if( sscanf(value.c_str(),"v: X=%d Y=%d Z=%d",&x,&y,&z)!=3 ) {x=y=z=1235467890;return false;}
+std::cerr<<
+   #ifdef cimg_use_vt100
+    cimg_library::cimg::t_green<<
+   #endif
+   "(x,y,z)=("<<x<<","<<y<<","<<z<<").\n"<<
+   #ifdef cimg_use_vt100
+    cimg_library::cimg::t_normal<<
+   #endif
+   std::flush;
+    return true;
+  }//position
+
+//use CImg
+#ifdef cimg_version
+  //! get position from reader
+  /** 
+   *
+   * @return 
+   */
+  bool position(cimg_library::CImg<int> &xyz)
+  {
+    int x,y,z;
+    if(!position(x,y,z)) return false;
+    xyz.assign(3);
+    xyz(0)=x;xyz(1)=y;xyz(2)=z;
+    return true;
+  }//position
+#endif //use CImg
+
+  //! Close stepper
+  /** 
+   *
+   * @return 
+   */
+  bool close()
+  {
+    return (pComStepper->closes()&&pComReader->closes());
+  }//close
+
+};//Cstepper_uControlXYZ_reader class
+
 
 #endif //STEPPER
 
