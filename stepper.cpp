@@ -79,7 +79,7 @@
 //CImg Library
 #include "../CImg/CImg.h"
 //stepper library
-#include "stepper.h"
+#include "stepper_factory.h"
 
 //! move several time by a 3D displacement (note: no reset to original position)
 /**
@@ -417,28 +417,29 @@ version: "+std::string(STEPPER_VERSION)+"\t(other library versions: RS232."+std:
   if(show_help) {/*print_help(std::cerr);*/return 0;}
 //stepper device object
 //! \todo set Cstepper_factory and corresponding command line option.
-  Cstepper stepper;
+  Cstepper_factory factory;
+  Cstepper *pStepper=factory.create(DeviceType);
 // OPEN 
-  if(!stepper.open(DevicePath,SerialType)) return 1;
+  if(!pStepper->open(DevicePath,SerialType)) return 1;
   int error;
 //MOVE
   if(!do_scan)
   {//3D move
     std::cerr<<"information: move mode\n";
-    error=moving(stepper,number_move,step,velocity,wait_time);
+    error=moving(*pStepper,number_move,step,velocity,wait_time);
   }//move
 //SCAN
   else
   {
     std::cerr<<"information: scan mode\n";
-    error=scanning(stepper,number,step,velocity,wait_time,mechanical_jitter
+    error=scanning(*pStepper,number,step,velocity,wait_time,mechanical_jitter
 #if cimg_display>0
       ,zoom,do_display
 #endif
       );
   }//volume scan
 //CLOSE
-  stepper.close();
+  pStepper->close();
   if(error!=0) {std::cerr<<"error: "<<std::string(do_scan?"scann":"mov")<<"ing function returns error="<<error<<".\n"; return error;}
   return 0;
 }//main

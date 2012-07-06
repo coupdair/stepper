@@ -132,6 +132,7 @@ class Cstepper_uControlXYZ: public Cstepper
 private:
   //! communication with stepper
   Cserial* pComStepper;
+public:
   //! constructor
   /**
    *

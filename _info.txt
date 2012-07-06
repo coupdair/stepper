@@ -22,5 +22,5 @@ git commit -a
 ./stepper --device-type uControlXYZ --serial-type serial_system --scan -nx 4 -ny 4 -nz 16 --jitter 50
 
 ##test
-./stepper --device-path /dev/stdout
+./stepper --device-path /dev/stdout --device-type fake
 

@@ -20,10 +20,10 @@ version: Makefile
 	cd ..; rm CImg; ln -s CImg-1.4.9 CImg; cd ./stepper/
 #	cd ..; rm CImg; ln -s CImg-1.2.5 CImg; cd ./stepper/
 
-stepper: stepper.cpp stepper.h Makefile ../rs232/serial_factory.h ../rs232/serial.h
+stepper: stepper.cpp stepper_factory.h stepper.h Makefile ../rs232/serial_factory.h ../rs232/serial.h
 	$(CPP) $(OPT) $@.cpp -o $@
 
-doc: stepper.Doxygen Makefile stepper.h stepper.cpp
+doc: stepper.Doxygen Makefile stepper.h stepper_factory.h stepper.cpp
 	./doxIt.sh
 
 clean:
