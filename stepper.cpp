@@ -416,6 +416,7 @@ version: "+std::string(STEPPER_VERSION)+"\t(other library versions: RS232."+std:
   ///stop if help requested
   if(show_help) {/*print_help(std::cerr);*/return 0;}
 //stepper device object
+//! \todo set Cstepper_factory and corresponding command line option.
   Cstepper stepper;
 // OPEN 
   if(!stepper.open(DevicePath,SerialType)) return 1;
@@ -430,7 +431,11 @@ version: "+std::string(STEPPER_VERSION)+"\t(other library versions: RS232."+std:
   else
   {
     std::cerr<<"information: scan mode\n";
-    error=scanning(stepper,number,step,velocity,wait_time,mechanical_jitter,zoom,do_display);
+    error=scanning(stepper,number,step,velocity,wait_time,mechanical_jitter
+#if cimg_display>0
+      ,zoom,do_display
+#endif
+      );
   }//volume scan
 //CLOSE
   stepper.close();
