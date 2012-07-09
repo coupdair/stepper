@@ -42,7 +42,8 @@ public:
    *
    * @return 
    */
-  bool open(const std::string& port_path,std::string port_type="serial_system")
+  bool open(const std::string& stepper_port_path,const std::string& stepper_port_type,
+            const std::string&  reader_port_path,const std::string&  reader_port_type, const cimg_library::CImg<int> &jitter)
   {
     std::cerr<<"warning: this is fake stepper opening.\n"<<std::flush;
     return true;
@@ -295,6 +296,8 @@ class Cstepper_uControlXYZ_reader: public Cstepper_uControlXYZ
 protected:
   //! communication with position reader
   Cserial* pComReader;
+  //! mechanical jitter for backward movement
+  cimg_library::CImg<int> mechanical_jitter;
 public:
   //! constructor
   /**
@@ -320,7 +323,7 @@ public:
    * @return 
    */
   bool open(const std::string& stepper_port_path,const std::string& stepper_port_type,
-            const std::string&  reader_port_path,const std::string&  reader_port_type)
+            const std::string&  reader_port_path,const std::string&  reader_port_type, const cimg_library::CImg<int> &jitter)
   {
     //choose serial
     Cserial_factory serial_factory;
@@ -329,8 +332,43 @@ public:
     //initialise
     if(!pComStepper->opens(stepper_port_path)) return false;
     if(!pComReader->opens(  reader_port_path)) return false;
+    mechanical_jitter=jitter;
     return true;
   }//open
+
+int move_backward(int axe, int position,int index,int step_value, cimg_library::CImg<int> velocity,const int mj)//,Cstepper &stepper)
+{
+        cimg_library::CImg<int> step(3);step=0;
+        if( (position>index) )
+        {//move backward: 2 moves
+        step(axe)=-(step_value+mj);
+        if(!Cstepper_uControlXYZ::move(step,velocity)) return 1;  // move backward
+        //stepx=cimg::vector(step(0),step(1),step(2));//=step;
+        step(axe)=mj;
+        if(!Cstepper_uControlXYZ::move(step,velocity)) return 1;  // move forward 
+        }//move backward
+  return 0;
+}//move_backward
+//!
+/**
+ *
+ * \param [in] position: current_position (to check forward or backward movement)
+ * \param [in] index: target_position (to check forward or backward movement)
+ * \param [in] step_value: step (should be current_position-target_position)
+**/
+int move_forward(int axe, int position,int index,int step_value, cimg_library::CImg<int> velocity)//, cimg_library::CImg<int> mj,Cstepper &stepper)
+{
+      cimg_library::CImg<int> step(3);step=0;
+       if( (position<index) ) 
+         {//move forward 
+         step(axe)=step_value;   
+///**** move along Y axis for next position 
+        if(!Cstepper_uControlXYZ::move(step,velocity)) return 1;  // move forward 
+///**** wait a while for user 
+//        cimg_library::cimg::wait(wait_time); 
+         }//move forward 
+  return 0;
+}//move_forward
 
   //! move once using 1D step and 1D velocity along specific axis
   /** 
@@ -341,17 +379,38 @@ public:
    *
    * @return true on success, false otherwise
    */
-  bool move(const int axis_index,const int position,const int velocity)
+  bool move(const int axis_index,const int target_position,const cimg_library::CImg<int> &velocity)
   {
-    //null displacement
-    if(position==0) return true;
-    //other displacement
-//! \todo [high] force position
-/*
-read position
-check return true;
-loop to force absolute position
-*/
+    cimg_library::CImg<int>  current_position(3);
+    ///null displacement
+    //get current position 
+    this->position(current_position);
+    if(target_position==current_position(axis_index)) return true;
+    ///other displacement
+//! \todo [high] . force absolute position
+    int mj=mechanical_jitter(axis_index);
+    int no_loopesz = 0; 
+    while( (target_position!=current_position(axis_index)) )
+    {
+      no_loopesz++; 
+      ///get current position 
+      this->position(current_position); 
+      move_backward(axis_index,current_position(axis_index),target_position,target_position-current_position(axis_index),velocity,mj);//,stepper);
+      move_forward( axis_index,current_position(axis_index),target_position,target_position-current_position(axis_index),velocity);//,mj,stepper);
+
+//******************************************************** 
+std::cout << "index = " << target_position <<  std::endl; 
+std::cout << axis_name[axis_index] << " = " << current_position(axis_index) <<  std::endl; 
+std::cout << "no_loopesz = " << no_loopesz <<  std::endl;
+std::cout << "mj = " << mj <<  std::endl;  
+//********************************************************
+
+      if (no_loopesz > 4) 
+      { 
+        mj-=1;
+        no_loopesz=0; 
+      } 
+    }//move loop
     return true;
   }//move
 
@@ -367,7 +426,7 @@ loop to force absolute position
   {
     cimg_forX(position,i)
     {
-      if(!move(i,position(i),velocity(i)))
+      if(!move(i,position(i),velocity))
       {
         std::cerr<<"error: while moving "<<axis_name[i]<<" axis (i.e. index="<<i<<").\n"<<std::flush;
         return false;

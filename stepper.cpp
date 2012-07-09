@@ -152,7 +152,7 @@ int moving(Cstepper &stepper,const int number,const cimg_library::CImg<int> &ste
  * \param[in] wait_time: minimum delay between each loop displacement
  * \param[in] mechanical_jitter: mechanical jitter to perform a good reset for any axes
 **/
-int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time, const unsigned int mechanical_jitter
+int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity,const int wait_time, const cimg_library::CImg<unsigned int> &mechanical_jitter
 #if cimg_display>0
 ,const unsigned int zoom=100,const bool do_display=false
 #endif //cimg_display
@@ -161,7 +161,7 @@ int scanning(Cstepper &stepper,const cimg_library::CImg<int> &number,const cimg_
 ///set signed mechanical jitter
   //set mechanical jitter for all axes with same sign as corresponding displacement.
   cimg_library::CImg<int>  mj(3);
-  cimg_forX(mj,a) mj(a)=((step(a)>0)?1:-1)*mechanical_jitter;
+  cimg_forX(mj,a) mj(a)=((step(a)>0)?1:-1)*mechanical_jitter(a);
 
 ///scanning message
   std::cerr<<"full scanning volume of "<<
@@ -374,6 +374,8 @@ version: "+std::string(STEPPER_VERSION)+"\t(other library versions: RS232."+std:
   const std::string DeviceType=cimg_option("--device-type","uControlXYZ","type of stepper device");
   const std::string DevicePath=cimg_option("--device-path","/dev/ttyUSB0","path of stepper device");
   const std::string SerialType=cimg_option("--serial-type","serial_system","type of serial device for stepper (i.e. serial_termios or serial_system)");
+  const std::string ReaderDevicePath=cimg_option("--reader-device-path","/dev/ttyUSB1","path of stepper device");
+  const std::string ReaderSerialType=cimg_option("--reader-serial-type","serial_system","type of serial device for stepper (i.e. serial_termios or serial_system)");
   ///displacement
   cimg_library::CImg<int> step(3);step.fill(0);
   {
@@ -397,7 +399,8 @@ version: "+std::string(STEPPER_VERSION)+"\t(other library versions: RS232."+std:
   ///number of steps
   const int number_move=cimg_option("-n",10,"number of displacement in move mode only, i.e. default option (e.g. --scan false option).");
   const bool do_scan=cimg_option("--scan",false,"set volume scanning mode, else default mode is moving mode (i.e. 3D linear movement).");
-  const unsigned int mechanical_jitter=cimg_option("--jitter",10,"set mechanical jitter to go back to origin for scanning mode only (i.e. reset position with same mechanical direction, could not be negative).");
+  const unsigned int jitter=cimg_option("--jitter",10,"set mechanical jitter to go back to origin for scanning mode only (i.e. reset position with same mechanical direction, could not be negative).");
+  cimg_library::CImg<unsigned int> mechanical_jitter(3);mechanical_jitter=jitter;
   cimg_library::CImg<int> number(3);number.fill(1);
   {
   const int number_x=cimg_option("-nx",10,"number of displacement along X axis (set --scan true option).");
@@ -420,7 +423,7 @@ version: "+std::string(STEPPER_VERSION)+"\t(other library versions: RS232."+std:
   Cstepper_factory factory;
   Cstepper *pStepper=factory.create(DeviceType);
 // OPEN 
-  if(!pStepper->open(DevicePath,SerialType)) return 1;
+  if(!pStepper->open(DevicePath,SerialType,ReaderDevicePath,ReaderSerialType,mechanical_jitter)) return 1;
   int error;
 //MOVE
   if(!do_scan)
