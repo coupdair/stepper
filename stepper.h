@@ -346,7 +346,7 @@ public:
     //null displacement
     if(position==0) return true;
     //other displacement
-//! \todo force position
+//! \todo [high] force position
 /*
 read position
 check return true;
@@ -363,18 +363,15 @@ loop to force absolute position
    *
    * @return true on success, false otherwise
    */
-  bool move(const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity)
+  bool move(const cimg_library::CImg<int> &position,const cimg_library::CImg<int> &velocity)
   {
-    cimg_forX(step,i)
+    cimg_forX(position,i)
     {
-      if(!move(i,step(i),velocity(i)))
+      if(!move(i,position(i),velocity(i)))
       {
         std::cerr<<"error: while moving "<<axis_name[i]<<" axis (i.e. index="<<i<<").\n"<<std::flush;
         return false;
       }
-      //wait for the movement ends
-//! \todo use blocking RS232 functions
-      if(step(i)!=0) cimg_library::cimg::wait(1000);
     }//axis loop
     return true;
   }//move

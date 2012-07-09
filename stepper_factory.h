@@ -37,8 +37,10 @@ std::cerr<<class_name<<"::"<<__func__<<"("<<type<<")\n"<<std::flush;
    switch(type)
     {
       case 0: return new Cstepper;  break;
-      case 1: return new Cstepper_uControlXYZ;  break;
-//      case 2: return new Cstepper_; break;
+//! \todo Cstepper_reader with random do,stall,jump
+//      case 1: return new Cstepper_reader;  break;
+      case 2: return new Cstepper_uControlXYZ;  break;
+      case 3: return new Cstepper_uControlXYZ_reader; break;
       default:
       {
         std::cerr<<class_name<<"::"<<__func__<<": error: stepper type="<<type<<" is unknown\n"<<std::flush;
@@ -59,7 +61,9 @@ std::cerr<<class_name<<"::"<<__func__<<"("<<type<<")\n"<<std::flush;
 std::cerr<<class_name<<"::"<<__func__<<"("<<type_name<<")\n"<<std::flush;
 #endif
     if(type_name=="fake") return create(0);
-    else if(type_name=="uControlXYZ") return create(1);
+    else if(type_name=="fake_reader") return create(1);
+    else if(type_name=="uControlXYZ") return create(2);
+    else if(type_name=="uControlXYZnReader") return create(3);
     else
     {
       std::cerr<<class_name<<"::"<<__func__<<": error: stepper type="<<type_name<<" not handled.\n"<<std::flush;
