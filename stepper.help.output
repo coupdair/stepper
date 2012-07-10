@@ -5,7 +5,7 @@
         ./stepper -n 10 -sx 1 -vx 1000 --device-type uControlXYZ #3D linear moving mode
         ./stepper --scan true -nx 10 -sx 1 -vx 1000 -ny 5 -sy 1 -vy 1000 #volume scanning mode
  version: v0.1.8	(other library versions: RS232.v0.3.1)
- compilation date:  (Jul  9 2012, 16:28:10)
+ compilation date:  (Jul 10 2012, 11:41:53)
 
     --help           true                     help (or -h option)
     --info           false                    show compilation options (or -I option)
