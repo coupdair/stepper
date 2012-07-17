@@ -16,6 +16,8 @@ public:
   //! class (or library) version for information only
   std::string class_version;
   std::vector<std::string> axis_name;
+  //! mechanical jitter for backward movement
+  cimg_library::CImg<int> mechanical_jitter;
   //! constructor
   /**
    *
@@ -42,7 +44,7 @@ public:
    *
    * @return 
    */
-  bool open(const std::string& stepper_port_path,const std::string& stepper_port_type,
+  virtual bool open(const std::string& stepper_port_path,const std::string& stepper_port_type,
             const std::string&  reader_port_path,const std::string&  reader_port_type, const cimg_library::CImg<int> &jitter)
   {
     std::cerr<<"warning: this is fake stepper opening.\n"<<std::flush;
@@ -296,8 +298,6 @@ class Cstepper_uControlXYZ_reader: public Cstepper_uControlXYZ
 protected:
   //! communication with position reader
   Cserial* pComReader;
-  //! mechanical jitter for backward movement
-  cimg_library::CImg<int> mechanical_jitter;
 public:
   //! constructor
   /**
@@ -305,7 +305,7 @@ public:
   **/
   Cstepper_uControlXYZ_reader()
   {
-    Cstepper_uControlXYZ::Cstepper_uControlXYZ();
+    Cstepper_uControlXYZ();//::Cstepper_uControlXYZ();
     ///set class name (debug only)
 #if cimg_debug>1
     class_name="Cstepper_uControlXYZ_reader";
@@ -501,6 +501,85 @@ std::cerr<<
 
 };//Cstepper_uControlXYZ_reader class
 
+
+class Cstepper_AVRmatrix: public Cstepper
+{
+private:
+  int value;
+public:
+  //! constructor
+  /**
+   *
+  **/
+  Cstepper_AVRmatrix()
+  {
+    Cstepper();
+    ///set class name (debug only)
+#if cimg_debug>1
+    class_name="Cstepper_AVRmatrixi";
+#endif
+  }//constructor
+
+  //! Open stepper device
+  /** 
+   *
+   * @param[in] stepper_port_path: path of serial port device connected to stepper
+   * @param[in] stepper_port_type: type of serial port for stepper (see \c Cserial_factory:: )
+   * @param[in]  reader_port_path: path of serial port device connected to position reader
+   * @param[in]  reader_port_type: type of serial port for reader  (see \c Cserial_factory:: )
+   *
+   * @return 
+   */
+  virtual bool open(const std::string& stepper_port_path,const std::string& stepper_port_type,
+            const std::string&  reader_port_path,const std::string&  reader_port_type, const cimg_library::CImg<int> &jitter)
+  {
+    std::cerr<<"warning: this is matrixIxirtam/AVR.matrix stepper opening.\n"<<std::flush;
+    value=0;
+    mechanical_jitter=0;
+    return true;
+  }//open
+
+  //! move once using 3D step (and 3D velocity)
+  /** 
+   *
+   * @param[in] step=steps in the 3 directions (XYZ)
+   * @param[in] velocity=velocities in the 3 directions (XYZ)
+   *
+   * @return true on success, false otherwise
+   */
+  virtual bool move(const cimg_library::CImg<int> &step,const cimg_library::CImg<int> &velocity)
+  {
+    std::cerr<<"warning: this is matrixIxirtam/AVR.matrix stepper moving.\n"<<std::flush;
+//! \todo [high] . set current index with matrixi (i.e. make upload)
+    ///set value for matrixIxirtam/matrix device
+    if(value==0) value=1; else value*=2;
+std::cerr<<"step(x,y,z)=("<<step(0)<<","<<step(1)<<","<<step(2)<<"), value="<<value<<".\n"<<std::flush;
+    ///setup AVR.matrixi with value
+//! \todo [medium] . set following using stepper_port_path: 'cd ' and stepper_port_type: './set_value.sh'.
+    std::string upload="cd /home/coudert/code.matrixi/matrixi/AVR.matrix; ./set_value.sh "+valueToString(value);
+    int error=std::system(upload.c_str());
+    if(error!=0)
+    {
+      std::cerr<<"error: Unable to setup matrixIxirtam/AVR.matrxi from "<<upload<<" (i.e. std::system error code="<<error<<").\n";
+      return false;
+    }
+std::cerr<<"done\n\n"<<std::flush;
+cimg_library::cimg::wait(2000);
+     return true;
+  }//move
+
+  //! Close stepper
+  /** 
+   *
+   * @return 
+   */
+  virtual bool close()
+  {
+    std::cerr<<"warning: this is matrixIxirtam/AVR.matrix stepper closing.\n"<<std::flush;
+    return true;
+  }//close
+
+};//Cstepper_AVRmatrix class
 
 #endif //STEPPER
 
