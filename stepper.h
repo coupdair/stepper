@@ -552,7 +552,7 @@ public:
     std::cerr<<"warning: this is matrixIxirtam/AVR.matrix stepper moving.\n"<<std::flush;
 //! \todo [high] . set current index with matrixi (i.e. make upload)
     ///set value for matrixIxirtam/matrix device
-    if(value==0) value=1; else value*=2;
+    if(value==0) value=1; else value=value<<step(0);
 std::cerr<<"step(x,y,z)=("<<step(0)<<","<<step(1)<<","<<step(2)<<"), value="<<value<<".\n"<<std::flush;
     ///setup AVR.matrixi with value
 //! \todo [medium] . set following using stepper_port_path: 'cd ' and stepper_port_type: './set_value.sh'.

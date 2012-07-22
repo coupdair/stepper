@@ -22,5 +22,8 @@ git commit -a
 ./stepper --device-type uControlXYZ --serial-type serial_system --scan -nx 4 -ny 4 -nz 16 --jitter 50
 
 ##test
+###fake
 ./stepper --device-path /dev/stdout --device-type fake
+###matrixIxirtam
+./stepper --device-type matrixiAVRmatrix -n 16 -sx 1 -sy 0 -sz 0 --wait-time 2000
 
