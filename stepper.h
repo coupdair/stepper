@@ -47,6 +47,9 @@ public:
   virtual bool open(const std::string& stepper_port_path,const std::string& stepper_port_type,
             const std::string&  reader_port_path,const std::string&  reader_port_type, const cimg_library::CImg<int> &jitter)
   {
+#if cimg_debug>1
+std::cerr<<class_name<<"::"<<__func__<<" empty\n"<<std::flush;
+#endif
     std::cerr<<"warning: this is fake stepper opening.\n"<<std::flush;
     return true;
   }//open
@@ -162,14 +165,18 @@ public:
    *
    * @return 
    */
-  bool open(const std::string& port_path,std::string port_type="serial_system")
+  bool open(const std::string& stepper_port_path,const std::string& stepper_port_type,
+            const std::string&  reader_port_path,const std::string&  reader_port_type, const cimg_library::CImg<int> &jitter)
   {
+#if cimg_debug>1
+std::cerr<<class_name<<"::"<<__func__<<"("<<stepper_port_path<<","<<stepper_port_type<<")\n"<<std::flush;
+#endif
     //choose serial
     Cserial_factory serial_factory;
-    pComStepper=serial_factory.create(port_type);
+    pComStepper=serial_factory.create(stepper_port_type);
     //initialise
 
-    return pComStepper->opens(port_path);
+    return pComStepper->opens(stepper_port_path);
   }//open
 
   //! convert value to string
@@ -325,6 +332,12 @@ public:
   bool open(const std::string& stepper_port_path,const std::string& stepper_port_type,
             const std::string&  reader_port_path,const std::string&  reader_port_type, const cimg_library::CImg<int> &jitter)
   {
+#if cimg_debug>1
+std::cerr<<class_name<<"::"<<__func__<<"("<<stepper_port_path<<","<<stepper_port_type
+  <<","<<reader_port_path<<","<<reader_port_type
+  <<", jitter=("<<jitter(0)<<","<<jitter(1)<<","<<jitter(2)<<") "
+  <<")\n"<<std::flush;
+#endif
     //choose serial
     Cserial_factory serial_factory;
     pComStepper=serial_factory.create(stepper_port_type);
