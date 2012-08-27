@@ -354,10 +354,13 @@ int move_backward(int axe, int position,int index,int step_value, cimg_library::
         cimg_library::CImg<int> step(3);step=0;
         if( (position>index) )
         {//move backward: 2 moves
-        step(axe)=-(step_value+mj);
+//cerr<<__FILE__<<"/"<<__func__<<"(axis="<<axe<<" i.e. "<<axis_name[axe]<<",step="<<step_value<<").\n"<<std::flush;
+        step(axe)=-(mj-step_value);
+//cerr<<__FILE__<<"/"<<__func__<<"/move by "<<step(axe)<<".\n"<<std::flush;
         if(!Cstepper_uControlXYZ::move(step,velocity)) return 1;  // move backward
         //stepx=cimg::vector(step(0),step(1),step(2));//=step;
         step(axe)=mj;
+//cerr<<__FILE__<<"/"<<__func__<<"/move by "<<step(axe)<<".\n"<<std::flush;
         if(!Cstepper_uControlXYZ::move(step,velocity)) return 1;  // move forward 
         }//move backward
   return 0;
@@ -374,7 +377,9 @@ int move_forward(int axe, int position,int index,int step_value, cimg_library::C
       cimg_library::CImg<int> step(3);step=0;
        if( (position<index) ) 
          {//move forward 
+//cerr<<__FILE__<<"/"<<__func__<<"(axis="<<axe<<" i.e. "<<axis_name[axe]<<",step="<<step_value<<").\n"<<std::flush;
          step(axe)=step_value;   
+//cerr<<__FILE__<<"/"<<__func__<<"/move by "<<step(axe)<<".\n"<<std::flush;
 ///**** move along Y axis for next position 
         if(!Cstepper_uControlXYZ::move(step,velocity)) return 1;  // move forward 
 ///**** wait a while for user 
@@ -401,16 +406,20 @@ int move_forward(int axe, int position,int index,int step_value, cimg_library::C
     if(target_position==current_position(axis_index)) return true;
     ///other displacement
 //! \todo [high] . force absolute position
-    int mj=mechanical_jitter(axis_index);
+    int mj=10;//mechanical_jitter(axis_index);
+std::cerr<<__FILE__<<"/"<<__func__<<"/mechanical_jitter="<<mj<<".\n"<<std::flush;
     int no_loopesz = 0; 
     while( (target_position!=current_position(axis_index)) )
     {
       no_loopesz++; 
-      ///get current position 
-      this->position(current_position); 
+//! \bug: add range for security reason in physical space
+//if(current_position(axis_index)>60||current_position(axis_index)<-60) {cerr<<"\nERROR: SECURITY STOP ("<<__FILE__<<"/"<<__func__<<").\n\n"<<std::flush;return false;}
+//cerr<<__FILE__<<"/"<<__func__<<"/move_*: target="<<target_position<<", current="<<current_position(axis_index)<<".\n"<<std::flush;
       move_backward(axis_index,current_position(axis_index),target_position,target_position-current_position(axis_index),velocity,mj);//,stepper);
       move_forward( axis_index,current_position(axis_index),target_position,target_position-current_position(axis_index),velocity);//,mj,stepper);
 
+      ///get current position 
+      this->position(current_position);
 //******************************************************** 
 std::cout << "index = " << target_position <<  std::endl; 
 std::cout << axis_name[axis_index] << " = " << current_position(axis_index) <<  std::endl; 
