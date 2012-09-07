@@ -18,6 +18,8 @@ public:
   std::vector<std::string> axis_name;
   //! mechanical jitter for backward movement
   cimg_library::CImg<int> mechanical_jitter;
+  //! movement fail counter
+  int fail;
   //! constructor
   /**
    *
@@ -399,6 +401,7 @@ int move_forward(int axe, int position,int index,int step_value, cimg_library::C
    */
   bool move(const int axis_index,const int target_position,const cimg_library::CImg<int> &velocity)
   {
+    fail=0;
     cimg_library::CImg<int>  current_position(3);
     ///null displacement
     //get current position 
@@ -409,6 +412,7 @@ int move_forward(int axe, int position,int index,int step_value, cimg_library::C
     int mj=10;//mechanical_jitter(axis_index);
 std::cerr<<__FILE__<<"/"<<__func__<<"/mechanical_jitter="<<mj<<".\n"<<std::flush;
     int no_loopesz = 0; 
+    fail=-1;
     while( (target_position!=current_position(axis_index)) )
     {
       no_loopesz++; 
@@ -431,7 +435,8 @@ std::cout << "mj = " << mj <<  std::endl;
       { 
         mj-=1;
         no_loopesz=0; 
-      } 
+      }
+      ++fail;
     }//move loop
     return true;
   }//move
@@ -446,6 +451,7 @@ std::cout << "mj = " << mj <<  std::endl;
    */
   bool move(const cimg_library::CImg<int> &position,const cimg_library::CImg<int> &velocity)
   {
+    int total_fail=0;
     cimg_forX(position,i)
     {
       if(!move(i,position(i),velocity))
@@ -453,7 +459,9 @@ std::cout << "mj = " << mj <<  std::endl;
         std::cerr<<"error: while moving "<<axis_name[i]<<" axis (i.e. index="<<i<<").\n"<<std::flush;
         return false;
       }
+      total_fail+=fail;
     }//axis loop
+    fail=total_fail;
     return true;
   }//move
 
