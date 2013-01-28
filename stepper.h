@@ -630,6 +630,7 @@ public:
     ///set library version (information only)
     class_version=STEPPER_VERSION;
     ///set axis names
+    axis_name.clear();
     axis_name.push_back("1");//X
     axis_name.push_back("2");//Y
     axis_name.push_back("3");//Z
@@ -710,7 +711,7 @@ std::cerr<<class_name<<"::"<<__func__<<"("<<stepper_port_path<<","<<stepper_port
     const float stepf=step/1000.0;//convert um step to mm jump
     const std::string formated_step=valueToString(stepf);
     const std::string command=axis+prefix+direction+formated_step;
-    return command;//e.g. "1PR+0.123" old: "NX123;"
+    return command;//e.g. "1PR+0.123"
   }
 
   //! move once using 1D step and 1D velocity along specific axis
@@ -730,20 +731,20 @@ std::cerr<<class_name<<"::"<<__func__<<"("<<stepper_port_path<<","<<stepper_port
     std::string command;
     ///Set velocity (e.g. "?" old "+X;RX1000;")
     command=set_velocity_command(step,velocity,axis_name[axis_index]);
-std::cerr<<"Set direction and velocity: write=|"<<command<<"|"<<std::flush;
+std::cerr<<"Set velocity: write=|"<<command<<"|"<<std::flush;
     if(!pComStepper->writes(command)) return false;
 //    pComStepper->reads(command);
 //std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
     ///Set displacement
-    command=set_step_command(step,axis_name[axis_index]);//e.g. "1PR+0.123" old "NX123;"
+    command=set_step_command(step,axis_name[axis_index]);//e.g. "1PR+0.123"
 std::cerr<<"Set displacement: write=|"<<command<<"|"<<std::flush;
- ////   if(!pComStepper->writes(command)) return false;
+    if(!pComStepper->writes(command)) return false;
 //    pComStepper->reads(command);
 //std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
     ///Execute displacement
-    command=axis_name[axis_index]+"WS123";//e.g. "1WS123" old "MX;"; i.e. Work Stop and additional wait of 123ms
+    command=axis_name[axis_index]+"WS123";//e.g. "1WS123" i.e. Work Stop and additional wait of 123ms
 std::cerr<<"Make displacement: write=|"<<command<<"|"<<std::flush;
- ////   if(!pComStepper->writes(command)) return false;
+    if(!pComStepper->writes(command)) return false;
 //    pComStepper->reads(command);
 //std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
     return true;
