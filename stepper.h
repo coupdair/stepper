@@ -707,7 +707,8 @@ std::cerr<<class_name<<"::"<<__func__<<"("<<stepper_port_path<<","<<stepper_port
     const std::string direction=(step<0)?std::string(""):std::string("+");
     const std::string prefix="PR";//i.e. Relative Position
     //axis
-    const std::string formated_step=valueToString(std::abs(step));
+    const float stepf=step/1000.0;//convert um step to mm jump
+    const std::string formated_step=valueToString(stepf);
     const std::string command=axis+prefix+direction+formated_step;
     return command;//e.g. "1PR+0.123" old: "NX123;"
   }
