@@ -678,33 +678,38 @@ std::cerr<<class_name<<"::"<<__func__<<"("<<stepper_port_path<<","<<stepper_port
    *
    * @return message (i.e. string to send to serial port)
    */
-  const std::string set_directionNvelocity_command(const int step,const int velocity,const std::string axis)
+  const std::string set_velocity_command(const int step,const int velocity,const std::string axis)
   {
-    const std::string direction=(step<0)?std::string("-"):std::string("+");
+    //! \todo set velocity commamd (presently default as not set)
+/*
     //axis
     const std::string suffix=";";
     const std::string prefix="R";
     const std::string formated_velocity=valueToString(velocity);
     const std::string command=direction+axis+suffix+prefix+axis+formated_velocity+suffix;
-    return command;//e.g. "+X;RX1000"
+    return command;//e.g. "?" old "+X;RX1000"
+*/
+    const std::string command="";
+    return command;//e.g. ""
   }
 
   //! set step command
   /** 
    *
    * @param[in] step=number of step to do
-   * @param[in] axis=translation along axis (as string; e.g. "X")
+   * @param[in] axis=translation along axis (as string; e.g. "1" for "X")
    *
    * @return message (i.e. string to send to serial port)
    */
   const std::string set_step_command(int step,const std::string axis)
   {
-    const std::string prefix="N";
+//! \todo [high] divide step by 1000 for um step (need to be float)
+    const std::string direction=(step<0)?std::string(""):std::string("+");
+    const std::string prefix="PR";//i.e. Relative Position
     //axis
     const std::string formated_step=valueToString(std::abs(step));
-    const std::string suffix=";";
-    const std::string command=prefix+axis+formated_step+suffix;
-    return command;//e.g. "NX123;"
+    const std::string command=axis+prefix+direction+formated_step;
+    return command;//e.g. "1PR+0.123" old: "NX123;"
   }
 
   //! move once using 1D step and 1D velocity along specific axis
@@ -722,22 +727,22 @@ std::cerr<<class_name<<"::"<<__func__<<"("<<stepper_port_path<<","<<stepper_port
     if(step==0) return true;
     //other displacement
     std::string command;
-    ///Set direction and velocity (e.g. "+X;RX1000;")
-    command=set_directionNvelocity_command(step,velocity,axis_name[axis_index]);
+    ///Set velocity (e.g. "?" old "+X;RX1000;")
+    command=set_velocity_command(step,velocity,axis_name[axis_index]);
 std::cerr<<"Set direction and velocity: write=|"<<command<<"|"<<std::flush;
     if(!pComStepper->writes(command)) return false;
 //    pComStepper->reads(command);
 //std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
     ///Set displacement
-    command=set_step_command(step,axis_name[axis_index]);//e.g. "NX123;"
+    command=set_step_command(step,axis_name[axis_index]);//e.g. "1PR+0.123" old "NX123;"
 std::cerr<<"Set displacement: write=|"<<command<<"|"<<std::flush;
-    if(!pComStepper->writes(command)) return false;
+ ////   if(!pComStepper->writes(command)) return false;
 //    pComStepper->reads(command);
 //std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
     ///Execute displacement
-    command="M"+axis_name[axis_index]+";";//e.g. "MX;";
+    command=axis_name[axis_index]+"WS123";//e.g. "1WS123" old "MX;"; i.e. Work Stop and additional wait of 123ms
 std::cerr<<"Make displacement: write=|"<<command<<"|"<<std::flush;
-    if(!pComStepper->writes(command)) return false;
+ ////   if(!pComStepper->writes(command)) return false;
 //    pComStepper->reads(command);
 //std::cerr<<"read=|"<<command<<"|\n"<<std::flush;
     return true;
@@ -762,7 +767,7 @@ std::cerr<<"Make displacement: write=|"<<command<<"|"<<std::flush;
       }
       //wait for the movement ends
 //! \todo use blocking RS232 functions
-      if(step(i)!=0) cimg_library::cimg::wait(1000);
+      if(step(i)!=0) cimg_library::cimg::wait(200);
     }//axis loop
     return true;
   }//move

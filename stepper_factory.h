@@ -42,6 +42,7 @@ std::cerr<<class_name<<"::"<<__func__<<"("<<type<<")\n"<<std::flush;
       case 2: return new Cstepper_uControlXYZ;  break;
       case 3: return new Cstepper_uControlXYZ_reader; break;
       case 4: return new Cstepper_AVRmatrix; break;
+      case 5: return new Cstepper_NewPortXYZ; break;
       default:
       {
         std::cerr<<class_name<<"::"<<__func__<<": error: stepper type="<<type<<" is unknown\n"<<std::flush;
@@ -66,6 +67,7 @@ std::cerr<<class_name<<"::"<<__func__<<"("<<type_name<<")\n"<<std::flush;
     else if(type_name=="uControlXYZ") return create(2);
     else if(type_name=="uControlXYZnReader") return create(3);
     else if(type_name=="matrixiAVRmatrix") return create(4);
+    else if(type_name=="NewPortXYZ") return create(5);
     else
     {
       std::cerr<<class_name<<"::"<<__func__<<": error: stepper type="<<type_name<<" not handled.\n"<<std::flush;
