@@ -1,7 +1,7 @@
 PROGRAMS = version stepper
 DOCUMENTATIONS = doc
 
-version = v0.2.1
+version = v0.2.2
 #version_cimg = 125
 version_cimg = 149
 version_rs232=`cat ../rs232/VERSION`
