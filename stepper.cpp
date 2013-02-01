@@ -363,6 +363,7 @@ it uses different GNU libraries (see --info option)\n\n \
 usage: ./stepper -h -I #help and compilation information\n \
        ./stepper -n 10 -sx 1 -vx 1000 --device-type uControlXYZ #3D linear moving mode\n \
        ./stepper --scan true -nx 10 -sx 1 -vx 1000 -ny 5 -sy 1 -vy 1000 #volume scanning mode\n \
+       ./stepper --device-type NewPortXYZ --serial-type serial_system --scan -nx 4 -ny 1 -nz 1 -sx 100 -sy 0 -sz 0 --wait-time 1000 #line scaning mode\n \
 version: "+std::string(STEPPER_VERSION)+"\t(other library versions: RS232."+std::string(RS232_VERSION)+")\n compilation date: " \
             ).c_str());//cimg_usage
   ///information and help
